@@ -1,49 +1,28 @@
-from pytest import fixture
-
-from model.skills import Skill
-from model.skills import BATTLESHIP_SKILLS
-from model.skills import (gun_feeder,
-                          demolition_expert,
-                          consumables_specialist,
-                          emergency_repair_specialist,
-                          incoming_fire_alert,
-                          preventive_maintenance,
-                          grease_the_gears,
-                          inertia_fuse_for_he_shells,
-                          brisk,
-                          vigilance,
-                          priority_target,
-                          aa_defense_and_asw_expert,
-                          super_heavy_ap_shells,
-                          long_range_secondary_battery_shells,
-                          adrenaline_rush,
-                          basics_of_survivability,
-                          improved_repair_party_readiness,
-                          focus_fire_training,
-                          furious,
-                          manual_secondary_battery_aiming,
-                          close_quarters_combat,
-                          emergency_repair_expert,
-                          concealment_expert,
-                          fire_prevention_expert)
-
-
-@fixture
-def skill():
-    return Skill(name='Demolition Expert', cost=1)
-
-
-def test_skill_has_correct_attributes(skill):
-    assert skill._name == 'Demolition Expert'
-    assert skill._cost == 1
-
-
-def test_skill_name_returns_correct_value(skill):
-    assert skill.name == skill._name
-
-
-def test_skill_cost_returns_correct_value(skill):
-    assert skill.cost == skill._cost
+from model.skills.battleship_skills import (gun_feeder,
+                                            demolition_expert,
+                                            consumables_specialist,
+                                            emergency_repair_specialist,
+                                            incoming_fire_alert,
+                                            preventive_maintenance,
+                                            grease_the_gears,
+                                            inertia_fuse_for_he_shells,
+                                            brisk,
+                                            vigilance,
+                                            priority_target,
+                                            aa_defense_and_asw_expert,
+                                            super_heavy_ap_shells,
+                                            long_range_secondary_battery_shells,
+                                            adrenaline_rush,
+                                            basics_of_survivability,
+                                            improved_repair_party_readiness,
+                                            focus_fire_training,
+                                            furious,
+                                            manual_secondary_battery_aiming,
+                                            close_quarters_combat,
+                                            emergency_repair_expert,
+                                            concealment_expert,
+                                            fire_prevention_expert,
+                                            BATTLESHIP_SKILLS)
 
 
 def test_gun_feeder_has_correct_attributes():

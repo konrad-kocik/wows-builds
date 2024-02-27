@@ -1,5 +1,5 @@
 from model.ships.ship import Ship
-from model.skills import Skill
+from model.skills.skill import Skill
 from model.exceptions import (TotalSkillsCostExceeded,
                               SkillAlreadyAdded,
                               UpgradeAlreadyAdded,
