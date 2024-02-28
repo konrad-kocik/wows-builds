@@ -27,3 +27,28 @@ radio_location = Skill('Radio Location', 4)
 inertia_fuse_for_he_shells = Skill('Inertia Fuse for HE Shells', 4)
 concealment_expert = Skill('Concealment Expert', 4)
 aa_defense_and_asw_expert = Skill('AA Defense and ASW Expert', 4)
+
+CRUISER_SKILLS = [grease_the_gears,
+                  swift_fish,
+                  consumables_specialist,
+                  gun_feeder,
+                  incoming_fire_alert,
+                  last_stand,
+                  demolition_expert,
+                  fill_the_tubes,
+                  consumables_enhancements,
+                  fly_in_the_sky,
+                  priority_target,
+                  focus_fire_training,
+                  heavy_he_and_sap_shells,
+                  pack_a_punch,
+                  adrenaline_rush,
+                  heavy_ap_shells,
+                  superintendent,
+                  survivability_expert,
+                  top_grade_gunner,
+                  outnumbered,
+                  radio_location,
+                  inertia_fuse_for_he_shells,
+                  concealment_expert,
+                  aa_defense_and_asw_expert]
