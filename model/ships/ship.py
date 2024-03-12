@@ -18,6 +18,18 @@ class Ship:
         return self._name
 
     @property
+    def nation(self) -> str:
+        return self._nation
+
+    @property
+    def ship_class(self) -> str:
+        return self._class
+
+    @property
+    def tier(self) -> int:
+        return self._tier
+
+    @property
     def skills(self) -> List[Skill]:
         return self._skills
 

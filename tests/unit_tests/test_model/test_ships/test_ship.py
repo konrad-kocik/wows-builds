@@ -25,6 +25,24 @@ def test_name_returns_correct_value(ship):
     assert ship.name == ship._name
 
 
+def test_nation_returns_correct_value(ship):
+    ship._nation = 'USA'
+
+    assert ship.nation == ship._nation
+
+
+def test_ship_class_returns_correct_value(ship):
+    ship._class = 'Battleship'
+
+    assert ship.ship_class == ship._class
+
+
+def test_tier_returns_correct_value(ship):
+    ship._tier = 8
+
+    assert ship.tier == ship._tier
+
+
 def test_skills_returns_correct_value(ship):
     ship._skills = [Mock()]
 
