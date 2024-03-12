@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Collection, Union
 
 from model.ships.ship import Ship
 from model.skills.skill import Skill
@@ -50,6 +50,13 @@ class Build:
         self._check_if_consumable_not_added_yet(consumable)
         slot = self._check_if_consumable_is_available(consumable)
         self._consumables[slot] = consumable
+
+    def serialize(self) -> Dict[str, Union[str, Collection]]:
+        return {'name': self._name,
+                'ship': self._ship.name,
+                'skills': [skill.name for skill in self._skills],
+                'upgrades': self._upgrades,
+                'consumables': self._consumables}
 
     def _check_if_skill_is_not_added_yet(self, skill: Skill):
         if skill in self._skills:

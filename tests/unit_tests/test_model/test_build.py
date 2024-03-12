@@ -20,6 +20,14 @@ def skill():
 
 
 @fixture
+def new_skill():
+    new_skill = Mock()
+    new_skill.name = 'Consumables Specialist'
+    new_skill.cost = 1
+    return new_skill
+
+
+@fixture
 def ship(skill, upgrade):
     ship = Mock()
     ship.name = 'North Carolina'
@@ -107,11 +115,8 @@ def test_add_skill_when_skill_is_not_already_added_then_it_is_added(build, skill
     assert build._skills == [skill]
 
 
-def test_add_skill_when_total_cost_is_exceeded_then_error_is_raised(build, ship, skill):
+def test_add_skill_when_total_cost_is_exceeded_then_error_is_raised(build, ship, skill, new_skill):
     build._skills = [skill] * 21
-    new_skill = Mock()
-    new_skill.name = 'Consumables Specialist'
-    new_skill.cost = 1
     ship.skills.append(new_skill)
 
     with raises(TotalSkillsCostExceeded) as exc:
@@ -120,11 +125,8 @@ def test_add_skill_when_total_cost_is_exceeded_then_error_is_raised(build, ship,
     assert str(exc.value) == 'Total cost of all skills has been exceeded'
 
 
-def test_add_skill_when_total_cost_is_not_exceeded_then_skill_is_added(build, ship, skill):
-    build._skills = [skill] * 19
-    new_skill = Mock()
-    new_skill.name = 'Vigilance'
-    new_skill.cost = 2
+def test_add_skill_when_total_cost_is_not_exceeded_then_skill_is_added(build, ship, skill, new_skill):
+    build._skills = [skill] * 20
     ship.skills.append(new_skill)
 
     build.add_skill(skill=new_skill)
@@ -199,3 +201,18 @@ def test_add_consumable_when_slot_is_empty_then_consumable_is_added_to_correct_s
     build.add_consumable(consumable=consumable)
 
     assert build._consumables == {'slot_3': consumable}
+
+
+def test_serialize_returns_correct_value(build, skill, new_skill):
+    build._skills = [skill, new_skill]
+    build._upgrades = {'slot_1': 'Main Armaments Modification 1',
+                       'slot_2': 'Damage Control System Modification 1'}
+    build._consumables = {'slot_1': 'Damage Control Party',
+                          'slot_2': 'Repair Party'}
+
+    assert build.serialize() == {'name': build._name,
+                                 'ship': build._ship.name,
+                                 'skills': [skill.name,
+                                            new_skill.name],
+                                 'upgrades': build._upgrades,
+                                 'consumables': build._consumables}
