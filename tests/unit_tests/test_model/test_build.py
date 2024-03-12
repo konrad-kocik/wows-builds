@@ -57,6 +57,30 @@ def test_build_has_correct_attributes(build, ship):
     assert build._consumables == {}
 
 
+def test_ship_returns_correct_value(build, ship):
+    assert build.ship == ship
+
+
+def test_skills_returns_correct_value(build):
+    build._skills = [Mock()]
+
+    assert build.skills == build._skills
+
+
+def test_upgrades_returns_correct_value(build):
+    build._upgrades = {'slot_1': ['Main Armaments Modification 1',
+                                  'Auxiliary Armaments Modification 1']}
+
+    assert build.upgrades == build._upgrades
+
+
+def test_consumables_returns_correct_value(build):
+    build._consumables = {'slot_3': ['Spotting Aircraft',
+                                     'Catapult Fighter']}
+
+    assert build.consumables == build._consumables
+
+
 def test_add_skill_when_skill_already_added_then_error_is_raised(build, skill):
     build._skills = [skill]
 

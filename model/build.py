@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 from model.ships.ship import Ship
 from model.skills.skill import Skill
 from model.exceptions import (TotalSkillsCostExceeded,
@@ -16,6 +18,22 @@ class Build:
         self._skills = []
         self._upgrades = {}
         self._consumables = {}
+
+    @property
+    def ship(self) -> Ship:
+        return self._ship
+
+    @property
+    def skills(self) -> List[Skill]:
+        return self._skills
+
+    @property
+    def upgrades(self) -> Dict[str, List[str]]:
+        return self._upgrades
+
+    @property
+    def consumables(self) -> Dict[str, List[str]]:
+        return self._consumables
 
     def add_skill(self, skill: Skill):
         self._check_if_skill_is_not_added_yet(skill)
