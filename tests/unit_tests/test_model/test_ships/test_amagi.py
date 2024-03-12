@@ -1,13 +1,19 @@
+from unittest.mock import Mock, patch
+
 from model.ships.amagi import Amagi
 
 
 def test_amagi_has_correct_attributes():
-    amagi = Amagi()
+    battleship_skills = [Mock(), Mock()]
+
+    with patch('model.ships.amagi.BATTLESHIP_SKILLS', battleship_skills):
+        amagi = Amagi()
 
     assert amagi._name == 'Amagi'
     assert amagi._nation == 'Japan'
     assert amagi._class == 'Battleship'
     assert amagi._tier == 8
+    assert amagi._skills == battleship_skills
     assert amagi._upgrades == {'slot_1': ['Main Armaments Modification 1',
                                           'Auxiliary Armaments Modification 1',
                                           'Magazine Modification 1',

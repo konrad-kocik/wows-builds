@@ -1,13 +1,19 @@
+from unittest.mock import Mock, patch
+
 from model.ships.minsk import Minsk
 
 
 def test_minsk_has_correct_attributes():
-    minsk = Minsk()
+    destroyer_skills = [Mock(), Mock()]
+
+    with patch('model.ships.minsk.DESTROYER_SKILLS', destroyer_skills):
+        minsk = Minsk()
 
     assert minsk._name == 'Minsk'
     assert minsk._nation == 'USSR'
     assert minsk._class == 'Destroyer'
     assert minsk._tier == 7
+    assert minsk._skills == destroyer_skills
     assert minsk._upgrades == {'slot_1': ['Main Armaments Modification 1',
                                           'Auxiliary Armaments Modification 1',
                                           'Magazine Modification 1',

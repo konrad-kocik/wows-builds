@@ -1,13 +1,19 @@
+from unittest.mock import Mock, patch
+
 from model.ships.vauquelin import Vauquelin
 
 
 def test_vauquelin_has_correct_attributes():
-    vauquelin = Vauquelin()
+    destroyer_skills = [Mock(), Mock()]
+
+    with patch('model.ships.vauquelin.DESTROYER_SKILLS', destroyer_skills):
+        vauquelin = Vauquelin()
 
     assert vauquelin._name == 'Vauquelin'
     assert vauquelin._nation == 'France'
     assert vauquelin._class == 'Destroyer'
     assert vauquelin._tier == 7
+    assert vauquelin._skills == destroyer_skills
     assert vauquelin._upgrades == {'slot_1': ['Main Armaments Modification 1',
                                               'Auxiliary Armaments Modification 1',
                                               'Magazine Modification 1',

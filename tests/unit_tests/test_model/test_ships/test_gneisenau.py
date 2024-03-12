@@ -1,13 +1,19 @@
+from unittest.mock import Mock, patch
+
 from model.ships.gneisenau import Gneisenau
 
 
 def test_gneisenau_has_correct_attributes():
-    gneisenau = Gneisenau()
+    battleship_skills = [Mock(), Mock()]
+
+    with patch('model.ships.gneisenau.BATTLESHIP_SKILLS', battleship_skills):
+        gneisenau = Gneisenau()
 
     assert gneisenau._name == 'Gneisenau'
     assert gneisenau._nation == 'Germany'
     assert gneisenau._class == 'Battleship'
     assert gneisenau._tier == 7
+    assert gneisenau._skills == battleship_skills
     assert gneisenau._upgrades == {'slot_1': ['Main Armaments Modification 1',
                                               'Auxiliary Armaments Modification 1',
                                               'Magazine Modification 1',

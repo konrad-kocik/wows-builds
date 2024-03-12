@@ -1,4 +1,5 @@
 from model.ships.ship import Ship
+from model.skills.battleship_skills import BATTLESHIP_SKILLS
 
 
 class NorthCarolina(Ship):
@@ -8,6 +9,7 @@ class NorthCarolina(Ship):
         self._nation = 'USA'
         self._class = 'Battleship'
         self._tier = 8
+        self._skills = BATTLESHIP_SKILLS
         self._upgrades = {'slot_1': ['Main Armaments Modification 1',
                                      'Auxiliary Armaments Modification 1',
                                      'Magazine Modification 1',

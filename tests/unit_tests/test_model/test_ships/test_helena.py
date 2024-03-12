@@ -1,13 +1,19 @@
+from unittest.mock import Mock, patch
+
 from model.ships.helena import Helena
 
 
 def test_helena_has_correct_attributes():
-    helena = Helena()
+    cruiser_skills = [Mock(), Mock()]
+
+    with patch('model.ships.helena.CRUISER_SKILLS', cruiser_skills):
+        helena = Helena()
 
     assert helena._name == 'Helena'
     assert helena._nation == 'USA'
     assert helena._class == 'Cruiser'
     assert helena._tier == 7
+    assert helena._skills == cruiser_skills
     assert helena._upgrades == {'slot_1': ['Main Armaments Modification 1',
                                            'Auxiliary Armaments Modification 1',
                                            'Magazine Modification 1',

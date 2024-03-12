@@ -1,4 +1,5 @@
 from model.ships.ship import Ship
+from model.skills.battleship_skills import BATTLESHIP_SKILLS
 
 
 class Nagato(Ship):
@@ -8,6 +9,7 @@ class Nagato(Ship):
         self._nation = 'Japan'
         self._class = 'Battleship'
         self._tier = 7
+        self._skills = BATTLESHIP_SKILLS
         self._upgrades = {'slot_1': ['Main Armaments Modification 1',
                                      'Auxiliary Armaments Modification 1',
                                      'Magazine Modification 1',

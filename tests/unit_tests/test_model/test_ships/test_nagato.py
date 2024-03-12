@@ -1,13 +1,19 @@
+from unittest.mock import Mock, patch
+
 from model.ships.nagato import Nagato
 
 
 def test_nagato_has_correct_attributes():
-    nagato = Nagato()
+    battleship_skills = [Mock(), Mock()]
+
+    with patch('model.ships.nagato.BATTLESHIP_SKILLS', battleship_skills):
+        nagato = Nagato()
 
     assert nagato._name == 'Nagato'
     assert nagato._nation == 'Japan'
     assert nagato._class == 'Battleship'
     assert nagato._tier == 7
+    assert nagato._skills == battleship_skills
     assert nagato._upgrades == {'slot_1': ['Main Armaments Modification 1',
                                            'Auxiliary Armaments Modification 1',
                                            'Magazine Modification 1',

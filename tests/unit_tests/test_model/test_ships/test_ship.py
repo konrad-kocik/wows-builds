@@ -1,4 +1,5 @@
 from pytest import fixture
+from unittest.mock import Mock
 
 from model.ships.ship import Ship
 
@@ -13,6 +14,7 @@ def test_ship_has_correct_attributes(ship):
     assert ship._nation is None
     assert ship._class is None
     assert ship._tier is None
+    assert ship._skills == []
     assert ship._upgrades == {}
     assert ship._consumables == {}
 
@@ -21,6 +23,12 @@ def test_name_returns_correct_value(ship):
     ship._name = 'North Carolina'
 
     assert ship.name == ship._name
+
+
+def test_skills_returns_correct_value(ship):
+    ship._skills = [Mock()]
+
+    assert ship.skills == ship._skills
 
 
 def test_upgrades_returns_correct_value(ship):

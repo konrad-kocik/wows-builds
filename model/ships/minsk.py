@@ -1,4 +1,5 @@
 from model.ships.ship import Ship
+from model.skills.destroyer_skills import DESTROYER_SKILLS
 
 
 class Minsk(Ship):
@@ -8,6 +9,7 @@ class Minsk(Ship):
         self._nation = 'USSR'
         self._class = 'Destroyer'
         self._tier = 7
+        self._skills = DESTROYER_SKILLS
         self._upgrades = {'slot_1': ['Main Armaments Modification 1',
                                      'Auxiliary Armaments Modification 1',
                                      'Magazine Modification 1',

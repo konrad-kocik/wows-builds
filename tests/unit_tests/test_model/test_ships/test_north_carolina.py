@@ -1,13 +1,19 @@
+from unittest.mock import Mock, patch
+
 from model.ships.north_carolina import NorthCarolina
 
 
 def test_north_carolina_has_correct_attributes():
-    north_carolina = NorthCarolina()
+    battleship_skills = [Mock(), Mock()]
+
+    with patch('model.ships.north_carolina.BATTLESHIP_SKILLS', battleship_skills):
+        north_carolina = NorthCarolina()
 
     assert north_carolina._name == 'North Carolina'
     assert north_carolina._nation == 'USA'
     assert north_carolina._class == 'Battleship'
     assert north_carolina._tier == 8
+    assert north_carolina._skills == battleship_skills
     assert north_carolina._upgrades == {'slot_1': ['Main Armaments Modification 1',
                                                    'Auxiliary Armaments Modification 1',
                                                    'Magazine Modification 1',

@@ -1,13 +1,19 @@
+from unittest.mock import Mock, patch
+
 from model.ships.hipper import Hipper
 
 
 def test_hipper_has_correct_attributes():
-    hipper = Hipper()
+    cruiser_skills = [Mock(), Mock()]
+
+    with patch('model.ships.hipper.CRUISER_SKILLS', cruiser_skills):
+        hipper = Hipper()
 
     assert hipper._name == 'Hipper'
     assert hipper._nation == 'Germany'
     assert hipper._class == 'Cruiser'
     assert hipper._tier == 8
+    assert hipper._skills == cruiser_skills
     assert hipper._upgrades == {'slot_1': ['Main Armaments Modification 1',
                                            'Auxiliary Armaments Modification 1',
                                            'Magazine Modification 1',

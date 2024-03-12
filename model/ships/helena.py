@@ -1,4 +1,5 @@
 from model.ships.ship import Ship
+from model.skills.cruiser_skills import CRUISER_SKILLS
 
 
 class Helena(Ship):
@@ -8,6 +9,7 @@ class Helena(Ship):
         self._nation = 'USA'
         self._class = 'Cruiser'
         self._tier = 7
+        self._skills = CRUISER_SKILLS
         self._upgrades = {'slot_1': ['Main Armaments Modification 1',
                                      'Auxiliary Armaments Modification 1',
                                      'Magazine Modification 1',
