@@ -2,6 +2,7 @@ from model.ships.ship import Ship
 from model.skills.skill import Skill
 from model.exceptions import (TotalSkillsCostExceeded,
                               SkillAlreadyAdded,
+                              SkillNotAvailable,
                               UpgradeAlreadyAdded,
                               UpgradeNotAvailable,
                               ConsumableAlreadyAdded,
@@ -18,6 +19,7 @@ class Build:
 
     def add_skill(self, skill: Skill):
         self._check_if_skill_is_not_added_yet(skill)
+        self._check_if_skill_is_available(skill)
         self._check_if_total_skills_cost_is_not_exceeded(skill)
         self._skills.append(skill)
 
@@ -34,6 +36,10 @@ class Build:
     def _check_if_skill_is_not_added_yet(self, skill: Skill):
         if skill in self._skills:
             raise SkillAlreadyAdded(f'Skill {skill.name} is already added')
+
+    def _check_if_skill_is_available(self, skill: Skill):
+        if skill.name not in [available_skill.name for available_skill in self._ship.skills]:
+            raise SkillNotAvailable(f'Skill {skill.name} is not available for ship {self._ship.name}')
 
     def _check_if_total_skills_cost_is_not_exceeded(self, skill: Skill):
         if sum([skill.cost for skill in self._skills]) + skill.cost > 21:

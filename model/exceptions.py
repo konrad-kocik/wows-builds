@@ -6,6 +6,10 @@ class SkillAlreadyAdded(Exception):
     pass
 
 
+class SkillNotAvailable(Exception):
+    pass
+
+
 class UpgradeAlreadyAdded(Exception):
     pass
 
