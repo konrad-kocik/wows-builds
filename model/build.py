@@ -20,6 +20,10 @@ class Build:
         self._consumables = {}
 
     @property
+    def name(self) -> str:
+        return self._name
+
+    @property
     def ship(self) -> Ship:
         return self._ship
 

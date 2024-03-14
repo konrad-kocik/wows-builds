@@ -65,6 +65,10 @@ def test_build_has_correct_attributes(build, ship):
     assert build._consumables == {}
 
 
+def test_name_returns_correct_value(build):
+    assert build.name == build._name
+
+
 def test_ship_returns_correct_value(build, ship):
     assert build.ship == ship
 
