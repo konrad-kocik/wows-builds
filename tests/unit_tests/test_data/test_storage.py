@@ -9,7 +9,7 @@ custom_dir_path = Path(__file__).parent.resolve()
 custom_file_path = custom_dir_path.joinpath('builds.json')
 custom_new_dir_path = Path(__file__).parent.resolve().joinpath('storage')
 custom_file_path_in_new_dir = custom_new_dir_path.joinpath('builds.json')
-default_dir_path = Path.home().joinpath('.wows_builds')
+default_dir_path = Path(__file__).parent.resolve().joinpath('.wows_builds')
 default_file_path = default_dir_path.joinpath('builds.json')
 
 
@@ -112,7 +112,8 @@ def test_save_builds_stores_builds_in_custom_directory(builds, after_remove_cust
 def test_save_builds_stores_builds_in_default_directory(builds, after_remove_default_dir):
     raw_builds, serialized_builds = builds
 
-    save_builds(builds=raw_builds)
+    with patch('data.storage._get_default_dir_path', Mock(return_value=default_dir_path)):
+        save_builds(builds=raw_builds)
 
     assert default_file_path.exists()
 
@@ -175,7 +176,8 @@ def test_load_builds_restores_builds_from_default_directory(before_save_builds_i
     _add_upgrades_to_build = Mock()
     _add_consumables_to_build = Mock()
 
-    with patch('data.storage.create_ship', create_ship), \
+    with patch('data.storage._get_default_dir_path', Mock(return_value=default_dir_path)), \
+         patch('data.storage.create_ship', create_ship), \
          patch('data.storage.Build', build), \
          patch('data.storage._add_skills_to_build', _add_skills_to_build), \
          patch('data.storage._add_upgrades_to_build', _add_upgrades_to_build), \
@@ -218,11 +220,13 @@ def test_can_builds_be_loaded_when_builds_are_not_saved_in_custom_directory_then
 
 def test_can_builds_be_loaded_when_builds_are_saved_in_default_directory_then_returns_true(before_save_builds_in_default_directory,
                                                                                            after_remove_default_dir):
-    assert can_builds_be_loaded() is True
+    with patch('data.storage._get_default_dir_path', Mock(return_value=default_dir_path)):
+        assert can_builds_be_loaded() is True
 
 
 def test_can_builds_be_loaded_when_builds_are_not_saved_in_default_directory_then_returns_false():
-    assert can_builds_be_loaded() is False
+    with patch('data.storage._get_default_dir_path', Mock(return_value=default_dir_path)):
+        assert can_builds_be_loaded() is False
 
 
 @mark.parametrize('platform, home, default_dir',
