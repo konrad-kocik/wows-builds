@@ -1,4 +1,4 @@
-from typing import List, Dict, Collection, Union
+from typing import List, Dict
 from pathlib import Path
 from json import dump, load
 from sys import platform
@@ -6,6 +6,8 @@ from sys import platform
 from model.build import Build
 from model.ships.ship import Ship
 from model.ships.ship_factory import create_ship
+
+STORAGE_FILE_NAME = 'builds.json'
 
 
 def save_builds(builds: List[Build], target_dir_path: Path = None):
@@ -16,17 +18,22 @@ def save_builds(builds: List[Build], target_dir_path: Path = None):
 
     serialized_builds = [build.serialize() for build in builds]
 
-    with open(target_dir_path.joinpath('builds.json'), 'w') as file:
+    with open(target_dir_path.joinpath(STORAGE_FILE_NAME), 'w') as file:
         dump(serialized_builds, file)
 
 
 def load_builds(source_dir_path: Path = None) -> List[Build]:
     source_dir_path = source_dir_path or _get_default_dir_path()
 
-    with open(source_dir_path.joinpath('builds.json'), 'r') as file:
+    with open(source_dir_path.joinpath(STORAGE_FILE_NAME), 'r') as file:
         serialized_builds = load(file)
 
     return _deserialize_builds(serialized_builds)
+
+
+def can_builds_be_loaded(source_dir_path: Path = None) -> bool:
+    source_dir_path = source_dir_path or _get_default_dir_path()
+    return source_dir_path.joinpath(STORAGE_FILE_NAME).exists()
 
 
 def _get_default_dir_path() -> Path:

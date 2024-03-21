@@ -3,7 +3,7 @@ from pytest import fixture, mark, raises
 from pathlib import Path
 from json import load, dump
 
-from data.storage import save_builds, load_builds, _get_default_dir_path
+from data.storage import save_builds, load_builds, can_builds_be_loaded, _get_default_dir_path
 
 custom_dir_path = Path(__file__).parent.resolve()
 custom_file_path = custom_dir_path.joinpath('builds.json')
@@ -205,6 +205,24 @@ def test_load_builds_when_directory_does_not_exist_then_error_is_raised():
         load_builds(source_dir_path=Path('/non/existing/directory'))
 
     assert str(exc.value) == "[Errno 2] No such file or directory: '/non/existing/directory/builds.json'"
+
+
+def test_can_builds_be_loaded_when_builds_are_saved_in_custom_directory_then_returns_true(before_save_builds_in_custom_directory,
+                                                                                          after_remove_custom_file):
+    assert can_builds_be_loaded(source_dir_path=custom_dir_path) is True
+
+
+def test_can_builds_be_loaded_when_builds_are_not_saved_in_custom_directory_then_returns_false():
+    assert can_builds_be_loaded(source_dir_path=custom_dir_path) is False
+
+
+def test_can_builds_be_loaded_when_builds_are_saved_in_default_directory_then_returns_true(before_save_builds_in_default_directory,
+                                                                                           after_remove_default_dir):
+    assert can_builds_be_loaded() is True
+
+
+def test_can_builds_be_loaded_when_builds_are_not_saved_in_default_directory_then_returns_false():
+    assert can_builds_be_loaded() is False
 
 
 @mark.parametrize('platform, home, default_dir',
