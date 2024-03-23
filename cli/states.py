@@ -60,8 +60,24 @@ class ListBuilds(State):
         super().__init__()
         self._header = 'BUILDS'
         self._builds = [] if not can_builds_be_loaded() else load_builds()
-        self._transitions = [Transition(build_id, build.name, ShowBuild) for build_id, build in enumerate(self._builds, start=1)]
+        self._transitions = []
+
+    def _show(self):
+        print(f'{self._header}')
+        self._show_grouped_builds()
         self._transitions.append(Transition(0, 'Back', Start))
+        print(f'\n[0] Back\n')
+
+    def _show_grouped_builds(self):
+        sorted_ship_classes = sorted(set([build.ship.ship_class for build in self._builds]))
+        sorted_builds = sorted(self._builds, key=lambda build: build.ship.ship_class)
+
+        for ship_class in sorted_ship_classes:
+            print(f'\n{ship_class}s:')
+            for build_id, build in enumerate(sorted_builds, start=1):
+                if build.ship.ship_class == ship_class:
+                    self._transitions.append(Transition(build_id, build.name, ShowBuild))
+                    print(f'  [{build_id}] {build.name}')
 
     def _go_to(self, transition_id: int) -> State:
         for transition in self._transitions:
