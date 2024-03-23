@@ -104,15 +104,15 @@ class ShowBuild(State):
 
         print('Skills:')
         for skill in self._build.skills:
-            print(f'  {skill.name}')
+            print(f'  {skill.cost} {skill.name}')
 
         print('Upgrades:')
-        for upgrade in self._build.upgrades.values():
-            print(f'  {upgrade}')
+        for slot, upgrade in self._build.upgrades.items():
+            print(f'  {slot[-1]} {upgrade}')
 
         print('Consumables:')
-        for consumable in self._build.consumables.values():
-            print(f'  {consumable}')
+        for slot, consumable in self._build.consumables.items():
+            print(f'  {slot[-1]} {consumable}')
 
         print()
         self._show_transitions()
