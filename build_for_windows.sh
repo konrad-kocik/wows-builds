@@ -1,0 +1,1 @@
+wine pyinstaller --onefile wows_builds.py
