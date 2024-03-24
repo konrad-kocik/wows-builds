@@ -1,6 +1,7 @@
 from typing import List
 from collections import namedtuple
 
+from model.build import Build
 from data.storage import can_builds_be_loaded, load_builds
 
 Transition = namedtuple('Transition', ['id', 'name', 'next_state'])
@@ -15,13 +16,13 @@ class State:
     def transitions(self) -> List[Transition]:
         return self._transitions
 
-    def show(self):
-        self._show()
+    def execute(self):
+        self._execute()
 
     def go_to(self, transition_id: int) -> 'State':
         return self._go_to(transition_id)
 
-    def _show(self):
+    def _execute(self):
         print(f'{self._header}\n')
         self._show_transitions()
 
@@ -40,9 +41,18 @@ class Start(State):
     def __init__(self):
         super().__init__()
         self._header = 'MAIN MENU'
-        self._transitions = [Transition(1, 'List builds', ListBuilds),  # TODO: change all next_states into function references i.e. self._list_builds
-                             Transition(2, 'Create build', CreateBuild),
-                             Transition(0, 'Exit', Exit)]
+        self._transitions = [Transition(1, 'List builds', self._transition_to_list_builds),
+                             Transition(2, 'Create build', self._transition_to_edit_build),
+                             Transition(0, 'Exit', self._transition_to_exit)]
+
+    def _transition_to_list_builds(self) -> State:
+        return ListBuilds()
+
+    def _transition_to_edit_build(self) -> State:
+        return EditBuild()
+
+    def _transition_to_exit(self) -> State:
+        return Exit()
 
 
 class Exit(State):
@@ -50,7 +60,7 @@ class Exit(State):
         super().__init__()
         self._header = 'FAIR WINDS AND FOLLOWING SEAS!'
 
-    def _show(self):
+    def _execute(self):
         print(f'{self._header}\n')
         exit()
 
@@ -62,7 +72,7 @@ class ListBuilds(State):
         self._builds = [] if not can_builds_be_loaded() else load_builds()
         self._transitions = []
 
-    def _show(self):
+    def _execute(self):
         print(f'{self._header}')
         self._show_grouped_builds()
         self._transitions.append(Transition(0, 'Back', Start))
@@ -76,7 +86,7 @@ class ListBuilds(State):
             print(f'\n{ship_class}s:')
             for build_id, build in enumerate(self._builds, start=1):
                 if build.ship.ship_class == ship_class:
-                    self._transitions.append(Transition(build_id, build.name, ShowBuild))
+                    self._transitions.append(Transition(build_id, build.name, self._transition_to_show_build))
                     print(f'  [{build_id}] {build.name}')
 
     def _go_to(self, transition_id: int) -> State:
@@ -85,17 +95,20 @@ class ListBuilds(State):
                 return transition.next_state(build=self._builds[transition_id - 1]) if transition_id != 0 else transition.next_state()
         return self
 
+    def _transition_to_show_build(self, build: Build) -> State:
+        return ShowBuild(build)
+
 
 class ShowBuild(State):
     def __init__(self, build):
         super().__init__()
         self._header = build.name.upper()
         self._build = build
-        self._transitions = [Transition(1, 'Edit', State),  # TODO: EditBuild
-                             Transition(2, 'Delete', State),  # TODO: DeleteBuild
-                             Transition(0, 'Back', ListBuilds)]
+        self._transitions = [Transition(1, 'Edit', self._transition_to_edit_build),
+                             Transition(2, 'Delete', self._transition_to_delete_build),
+                             Transition(0, 'Back', self._transition_to_list_builds)]
 
-    def _show(self):
+    def _execute(self):
         print(f'{self._header}\n')
         print(f'Ship: {self._build.ship.name}')
         print(f'Nation: {self._build.ship.nation}')
@@ -117,16 +130,28 @@ class ShowBuild(State):
         print()
         self._show_transitions()
 
+    def _transition_to_edit_build(self) -> State:
+        return EditBuild(self._build)
 
-class CreateBuild(State):
-    def __init__(self):
+    def _transition_to_delete_build(self) -> State:
+        return State()
+
+    def _transition_to_list_builds(self) -> State:
+        return ListBuilds()
+
+
+class EditBuild(State):
+    def __init__(self, build: Build = None):
         super().__init__()
-        self._header = 'BUILD CREATOR'
-        self._transitions = [Transition(1, 'Save', Start),
+        self._header = 'BUILD EDITOR'
+        self._build = build
+        self._transitions = [Transition(1, 'Edit name', State),  # TODO: EditBuildName
+                             Transition(9, 'Save', Start),
                              Transition(0, 'Discard', Start)]
 
-    def _show(self):
+    def _execute(self):
         print(f'{self._header}\n')
-        build_name = input('Build name: ')
-        print()
+        if self._build:
+            print(f'Name: {self._build.name}\n')
+            print(f'Ship: {self._build.ship.name}')
         self._show_transitions()

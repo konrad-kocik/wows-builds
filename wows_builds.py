@@ -13,7 +13,7 @@ print(r'''
 state = Start()
 
 while True:
-    state.show()
+    state.execute()
     option = input('\nSelect option: ')
     print('\n' + '=' * 60 + '\n')
 
