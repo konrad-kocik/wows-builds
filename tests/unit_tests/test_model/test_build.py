@@ -65,6 +65,16 @@ def test_build_has_correct_attributes(build, ship):
     assert build._consumables == {}
 
 
+def test_empty_build_has_correct_attributes():
+    build = Build()
+
+    assert build._name == 'Unnamed Build'
+    assert build._ship is None
+    assert build._skills == []
+    assert build._upgrades == {}
+    assert build._consumables == {}
+
+
 def test_name_returns_correct_value(build):
     assert build.name == build._name
 
@@ -100,6 +110,15 @@ def test_add_skill_when_skill_already_added_then_error_is_raised(build, skill):
         build.add_skill(skill=skill)
 
     assert str(exc.value) == f'Skill {skill.name} is already added'
+
+
+def test_add_skill_when_ship_is_not_set_then_error_is_raised(build, skill):
+    build._ship = None
+
+    with raises(SkillNotAvailable) as exc:
+        build.add_skill(skill=skill)
+
+    assert str(exc.value) == f'Skill {skill.name} cannot be added to build without a ship'
 
 
 def test_add_skill_when_skill_not_available_for_ship_then_error_is_raised(build, ship, skill):
@@ -147,6 +166,15 @@ def test_add_upgrade_when_upgrade_already_added_then_error_is_raised(build, upgr
     assert str(exc.value) == f'Upgrade {upgrade} is already added'
 
 
+def test_add_upgrade_when_ship_is_not_set_then_error_is_raised(build, upgrade):
+    build._ship = None
+
+    with raises(UpgradeNotAvailable) as exc:
+        build.add_upgrade(upgrade=upgrade)
+
+    assert str(exc.value) == f'Upgrade {upgrade} cannot be added to build without a ship'
+
+
 def test_add_upgrade_when_upgrade_not_available_for_ship_then_error_is_raised(build, ship, upgrade):
     ship.upgrades = {'slot_1': ['Spotting Aircraft Modification 1',
                                 'Damage Control Party Modification 1'],
@@ -179,6 +207,15 @@ def test_add_consumable_when_consumable_already_added_then_error_is_raised(build
         build.add_consumable(consumable=consumable)
 
     assert str(exc.value) == f'Consumable {consumable} is already added'
+
+
+def test_add_consumable_when_ship_is_not_set_then_error_is_raised(build, consumable):
+    build._ship = None
+
+    with raises(ConsumableNotAvailable) as exc:
+        build.add_consumable(consumable=consumable)
+
+    assert str(exc.value) == f'Consumable {consumable} cannot be added to build without a ship'
 
 
 def test_add_consumable_when_consumable_not_available_for_ship_then_error_is_raised(build, ship, consumable):

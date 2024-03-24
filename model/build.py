@@ -12,7 +12,7 @@ from model.exceptions import (TotalSkillsCostExceeded,
 
 
 class Build:
-    def __init__(self, name: str, ship: Ship):
+    def __init__(self, name: str = 'Unnamed Build', ship: Ship = None):
         self._name = name
         self._ship = ship
         self._skills = []
@@ -67,6 +67,9 @@ class Build:
             raise SkillAlreadyAdded(f'Skill {skill.name} is already added')
 
     def _check_if_skill_is_available(self, skill: Skill):
+        if not self._ship:
+            raise SkillNotAvailable(f'Skill {skill.name} cannot be added to build without a ship')
+
         if skill.name not in [available_skill.name for available_skill in self._ship.skills]:
             raise SkillNotAvailable(f'Skill {skill.name} is not available for ship {self._ship.name}')
 
@@ -79,6 +82,9 @@ class Build:
             raise UpgradeAlreadyAdded(f'Upgrade {upgrade} is already added')
 
     def _check_if_upgrade_is_available(self, upgrade: str) -> str:
+        if not self._ship:
+            raise UpgradeNotAvailable(f'Upgrade {upgrade} cannot be added to build without a ship')
+
         for ship_upgrade_slot, ship_upgrades in self._ship.upgrades.items():
             for ship_upgrade in ship_upgrades:
                 if ship_upgrade == upgrade:
@@ -91,6 +97,9 @@ class Build:
             raise ConsumableAlreadyAdded(f'Consumable {consumable} is already added')
 
     def _check_if_consumable_is_available(self, consumable: str) -> str:
+        if not self._ship:
+            raise ConsumableNotAvailable(f'Consumable {consumable} cannot be added to build without a ship')
+
         for ship_consumable_slot, ship_consumables in self._ship.consumables.items():
             for ship_consumable in ship_consumables:
                 if ship_consumable == consumable:
