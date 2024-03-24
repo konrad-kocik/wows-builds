@@ -68,7 +68,7 @@ def test_build_has_correct_attributes(build, ship):
 def test_empty_build_has_correct_attributes():
     build = Build()
 
-    assert build._name == 'Unnamed Build'
+    assert build._name == ''
     assert build._ship is None
     assert build._skills == []
     assert build._upgrades == {}
@@ -77,6 +77,13 @@ def test_empty_build_has_correct_attributes():
 
 def test_name_returns_correct_value(build):
     assert build.name == build._name
+
+
+def test_name_can_be_set(build):
+    new_name = 'Mighty Yamato'
+    build.name = new_name
+
+    assert build._name == new_name
 
 
 def test_ship_returns_correct_value(build, ship):

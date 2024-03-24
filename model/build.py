@@ -12,7 +12,7 @@ from model.exceptions import (TotalSkillsCostExceeded,
 
 
 class Build:
-    def __init__(self, name: str = 'Unnamed Build', ship: Ship = None):
+    def __init__(self, name: str = '', ship: Ship = None):
         self._name = name
         self._ship = ship
         self._skills = []
@@ -22,6 +22,10 @@ class Build:
     @property
     def name(self) -> str:
         return self._name
+
+    @name.setter
+    def name(self, name: str):
+        self._name = name
 
     @property
     def ship(self) -> Ship:
