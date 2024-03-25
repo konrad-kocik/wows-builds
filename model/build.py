@@ -31,6 +31,13 @@ class Build:
     def ship(self) -> Ship:
         return self._ship
 
+    @ship.setter
+    def ship(self, ship: Ship):
+        self._ship = ship
+        self._skills = []
+        self._upgrades = {}
+        self._consumables = {}
+
     @property
     def skills(self) -> List[Skill]:
         return self._skills

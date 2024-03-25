@@ -90,6 +90,27 @@ def test_ship_returns_correct_value(build, ship):
     assert build.ship == ship
 
 
+def test_ship_can_be_set(build):
+    new_ship = Mock()
+    new_ship.name = 'Yamato'
+    build.ship = new_ship
+
+    assert build._ship is new_ship
+    assert build._ship.name == new_ship.name
+
+
+def test_setting_new_ship_resets_skills_upgrades_and_consumables(build, ship, skill, upgrade, consumable):
+    build._skills = [skill]
+    build._upgrades = {'slot_1': upgrade}
+    build._consumables = {'slot_2': consumable}
+
+    build.ship = Mock()
+
+    assert build._skills == []
+    assert build._upgrades == {}
+    assert build._consumables == {}
+
+
 def test_skills_returns_correct_value(build):
     build._skills = [Mock()]
 
