@@ -23,7 +23,7 @@ def skill():
 def new_skill():
     new_skill = Mock()
     new_skill.name = 'Consumables Specialist'
-    new_skill.cost = 1
+    new_skill.cost = 2
     return new_skill
 
 
@@ -117,11 +117,31 @@ def test_skills_returns_correct_value(build):
     assert build.skills == build._skills
 
 
+def test_sorted_skills_returns_correct_value(build, skill, new_skill):
+    build._skills = [new_skill, skill]
+
+    assert build.sorted_skills == [skill, new_skill]
+
+
+def test_total_skills_cost_returns_correct_value(build, skill, new_skill):
+    build._skills = [skill, new_skill]
+
+    assert build.total_skills_cost == 3
+
+
 def test_upgrades_returns_correct_value(build):
-    build._upgrades = {'slot_1': ['Main Armaments Modification 1',
-                                  'Auxiliary Armaments Modification 1']}
+    build._upgrades = {'slot_1': 'Main Armaments Modification 1',
+                       'slot_2': 'Auxiliary Armaments Modification 1'}
 
     assert build.upgrades == build._upgrades
+
+
+def test_sorted_upgrades_returns_correct_value(build):
+    build._upgrades = {'slot_2': 'Damage Control System Modification 1',
+                       'slot_1': 'Main Armaments Modification 1'}
+
+    assert build.sorted_upgrades == {'slot_1': 'Main Armaments Modification 1',
+                                     'slot_2': 'Damage Control System Modification 1'}
 
 
 def test_consumables_returns_correct_value(build):
@@ -129,6 +149,14 @@ def test_consumables_returns_correct_value(build):
                                      'Catapult Fighter']}
 
     assert build.consumables == build._consumables
+
+
+def test_sorted_consumables_returns_correct_value(build):
+    build._consumables = {'slot_2': 'Repair Party',
+                          'slot_1': 'Damage Control Party'}
+
+    assert build.sorted_consumables == {'slot_1': 'Damage Control Party',
+                                        'slot_2': 'Repair Party'}
 
 
 def test_add_skill_when_skill_already_added_then_error_is_raised(build, skill):
@@ -167,7 +195,7 @@ def test_add_skill_when_skill_is_not_already_added_then_it_is_added(build, skill
 
 
 def test_add_skill_when_total_cost_is_exceeded_then_error_is_raised(build, ship, skill, new_skill):
-    build._skills = [skill] * 21
+    build._skills = [skill] * 20
     ship.skills.append(new_skill)
 
     with raises(TotalSkillsCostExceeded) as exc:
@@ -177,12 +205,24 @@ def test_add_skill_when_total_cost_is_exceeded_then_error_is_raised(build, ship,
 
 
 def test_add_skill_when_total_cost_is_not_exceeded_then_skill_is_added(build, ship, skill, new_skill):
-    build._skills = [skill] * 20
+    build._skills = [skill] * 19
     ship.skills.append(new_skill)
 
     build.add_skill(skill=new_skill)
 
     assert new_skill in build._skills
+
+
+def test_has_skill_if_skill_present_then_returns_true(build, skill):
+    build._skills = [skill]
+
+    assert build.has_skill(skill=skill) is True
+
+
+def test_has_skill_if_skill_not_present_then_returns_false(build, skill):
+    build._skills = []
+
+    assert build.has_skill(skill=skill) is False
 
 
 def test_add_upgrade_when_upgrade_already_added_then_error_is_raised(build, upgrade):
@@ -228,6 +268,18 @@ def test_add_upgrade_when_slot_is_empty_then_upgrade_is_added_to_correct_slot(bu
     assert build._upgrades == {'slot_1': upgrade}
 
 
+def test_has_upgrade_when_upgrade_present_then_returns_true(build, upgrade):
+    build._upgrades = {'slot_1': upgrade}
+
+    assert build.has_upgrade(upgrade=upgrade) is True
+
+
+def test_has_upgrade_when_upgrade_not_present_then_returns_false(build, upgrade):
+    build._upgrades = {}
+
+    assert build.has_upgrade(upgrade=upgrade) is False
+
+
 def test_add_consumable_when_consumable_already_added_then_error_is_raised(build, consumable):
     build._consumables = {'slot_3': consumable}
 
@@ -270,6 +322,18 @@ def test_add_consumable_when_slot_is_empty_then_consumable_is_added_to_correct_s
     build.add_consumable(consumable=consumable)
 
     assert build._consumables == {'slot_3': consumable}
+
+
+def test_has_consumable_when_consumable_present_then_returns_true(build, consumable):
+    build._consumables = {'slot_3': consumable}
+
+    assert build.has_consumable(consumable=consumable) is True
+
+
+def test_has_consumable_when_consumable_not_present_then_returns_false(build, consumable):
+    build._consumables = {}
+
+    assert build.has_consumable(consumable=consumable) is False
 
 
 def test_serialize_returns_correct_value(build, skill, new_skill):

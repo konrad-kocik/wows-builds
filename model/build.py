@@ -43,12 +43,28 @@ class Build:
         return self._skills
 
     @property
+    def sorted_skills(self) -> List[Skill]:
+        return sorted(self._skills, key=lambda skill: skill.cost)
+
+    @property
+    def total_skills_cost(self) -> int:
+        return sum([skill.cost for skill in self._skills])
+
+    @property
     def upgrades(self) -> Dict[str, List[str]]:
         return self._upgrades
 
     @property
+    def sorted_upgrades(self) -> Dict[str, str]:
+        return {slot: self._upgrades[slot] for slot in sorted(self._upgrades.keys())}
+
+    @property
     def consumables(self) -> Dict[str, List[str]]:
         return self._consumables
+
+    @property
+    def sorted_consumables(self) -> Dict[str, str]:
+        return {slot: self._consumables[slot] for slot in sorted(self._consumables.keys())}
 
     def add_skill(self, skill: Skill):
         self._check_if_skill_is_not_added_yet(skill)
@@ -56,15 +72,24 @@ class Build:
         self._check_if_total_skills_cost_is_not_exceeded(skill)
         self._skills.append(skill)
 
+    def has_skill(self, skill: Skill) -> bool:
+        return skill in self._skills
+
     def add_upgrade(self, upgrade: str):
         self._check_if_upgrade_not_added_yet(upgrade)
         slot = self._check_if_upgrade_is_available(upgrade)
         self._upgrades[slot] = upgrade
 
+    def has_upgrade(self, upgrade: str) -> bool:
+        return upgrade in self._upgrades.values()
+
     def add_consumable(self, consumable: str):
         self._check_if_consumable_not_added_yet(consumable)
         slot = self._check_if_consumable_is_available(consumable)
         self._consumables[slot] = consumable
+
+    def has_consumable(self, consumable: str) -> bool:
+        return consumable in self._consumables.values()
 
     def serialize(self) -> Dict[str, Union[str, Collection]]:
         return {'name': self._name,
