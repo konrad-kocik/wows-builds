@@ -1,12 +1,22 @@
 from pytest import fixture
 from unittest.mock import Mock, patch, call
 
-from cli.states import Transition, State
+from cli.states import Transition, State, Start, Exit, ListBuilds, EditBuild
+
+
+@fixture
+def builds():
+    return [Mock(), Mock()]
 
 
 @fixture
 def state():
     return State()
+
+
+@fixture
+def start():
+    return Start()
 
 
 def test_state_has_correct_attributes(state):
@@ -134,3 +144,58 @@ def test_state__print_build_when_build_is_not_empty_then_it_is_printed(state):
                                    call('Consumables:'),
                                    call(f'  1 {consumable_1}'),
                                    call(f'  2 {consumable_2}')])
+
+
+def test_start_has_correct_attributes(builds):
+    State._builds = builds
+    start = Start()
+
+    assert start._header == 'MAIN MENU'
+    assert start._builds == builds
+    assert start._transitions == [Transition(1, 'List builds', start._list_builds),
+                                  Transition(2, 'Create build', start._create_build),
+                                  Transition(0, 'Exit', start._exit)]
+
+
+def test_start_when_no_builds_and_they_can_be_loaded_then_they_are_loaded(builds):
+    State._builds = []
+    can_builds_be_loaded = Mock(return_value=True)
+    load_builds = Mock(return_value=builds)
+
+    with patch('cli.states.can_builds_be_loaded', can_builds_be_loaded), patch('cli.states.load_builds', load_builds):
+        start = Start()
+
+    can_builds_be_loaded.assert_called_once()
+    load_builds.assert_called_once()
+    assert start._builds == builds
+
+
+def test_start_when_no_builds_and_they_cannot_be_loaded_then_they_are_not_loaded():
+    State._builds = []
+    can_builds_be_loaded = Mock(return_value=False)
+    load_builds = Mock()
+
+    with patch('cli.states.can_builds_be_loaded', can_builds_be_loaded), patch('cli.states.load_builds', load_builds):
+        start = Start()
+
+    can_builds_be_loaded.assert_called_once()
+    load_builds.assert_not_called()
+    assert start._builds == []
+
+
+def test_start__list_builds_returns_correct_state(start):
+    returned_state = start._list_builds()
+
+    assert isinstance(returned_state, ListBuilds)
+
+
+def test_start__create_build_returns_correct_state(start):
+    returned_state = start._create_build()
+
+    assert isinstance(returned_state, EditBuild)
+
+
+def test_start__exit_returns_correct_state(start):
+    returned_state = start._exit()
+
+    assert isinstance(returned_state, Exit)
