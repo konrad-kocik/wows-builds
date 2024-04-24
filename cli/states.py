@@ -106,12 +106,12 @@ class ListBuilds(State):
         print(f'\n[0] Back\n')
 
     def _show_grouped_builds(self):
-        State._builds = sorted(State._builds, key=lambda build: build.ship.ship_class)
-        ship_classes = sorted(set([build.ship.ship_class for build in State._builds]))
+        self._builds = sorted(self._builds, key=lambda build: build.ship.ship_class)
+        ship_classes = sorted(set([build.ship.ship_class for build in self._builds]))
 
         for ship_class in ship_classes:
             print(f'\n{ship_class}s:')
-            for build_id, build in enumerate(State._builds, start=1):
+            for build_id, build in enumerate(self._builds, start=1):
                 if build.ship.ship_class == ship_class:
                     self._transitions.append(Transition(build_id, build.name, self._show_build))
                     print(f'  [{build_id}] {build.name}')
