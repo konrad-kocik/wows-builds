@@ -102,7 +102,7 @@ class ListBuilds(State):
     def _execute(self):
         print(f'{self._header}')
         self._show_grouped_builds()
-        self._transitions.append(Transition(0, 'Back', Start))
+        self._transitions.append(Transition(0, 'Back', self._start))
         print(f'\n[0] Back\n')
 
     def _show_grouped_builds(self):
@@ -121,6 +121,9 @@ class ListBuilds(State):
             if transition.id == transition_id:
                 return transition.next_state(build=State._builds[transition_id - 1]) if transition_id != 0 else transition.next_state()
         return self
+
+    def _start(self) -> State:
+        return Start()
 
     def _show_build(self, build: Build) -> State:
         return ShowBuild(build)
