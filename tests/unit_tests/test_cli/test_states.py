@@ -19,6 +19,11 @@ def start():
     return Start()
 
 
+@fixture
+def exit():
+    return Exit()
+
+
 def test_state_has_correct_attributes(state):
     assert state._builds == []
     assert state._header == ''
@@ -199,3 +204,18 @@ def test_start__exit_returns_correct_state(start):
     returned_state = start._exit()
 
     assert isinstance(returned_state, Exit)
+
+
+def test_exit_has_correct_attributes(exit):
+    assert exit._header == 'FAIR WINDS AND FOLLOWING SEAS!'
+
+
+def test_exit__execute_does_correct_execution(exit):
+    mocked_print = Mock()
+    mocked_exit = Mock()
+
+    with patch('builtins.print', mocked_print), patch('builtins.exit', mocked_exit):
+        exit._execute()
+
+    mocked_print.assert_called_once_with(f'{exit._header}\n')
+    mocked_exit.assert_called_once_with()
