@@ -5,8 +5,16 @@ from cli.states import Transition, State, Start, Exit, ListBuilds, ShowBuild, Ed
 
 
 @fixture
-def builds():
-    return [Mock(), Mock()]
+def build():
+    build = Mock()
+    build.name = 'build name'
+    build.total_skills_cost = 0
+    return build
+
+
+@fixture
+def builds(build):
+    return [build, Mock()]
 
 
 @fixture
@@ -27,6 +35,11 @@ def exit():
 @fixture
 def list_builds():
     return ListBuilds()
+
+
+@fixture
+def show_build(build):
+    return ShowBuild(build=build)
 
 
 def test_state_has_correct_attributes(state):
@@ -322,11 +335,59 @@ def test_list_builds__show_build_returns_correct_state(list_builds):
     assert isinstance(returned_state, ShowBuild)
 
 
-def test_list_builds__show_build_uses_correct_build(list_builds):
-    build = Mock()
+def test_list_builds__show_build_uses_correct_build(list_builds, build):
     show_build_state = Mock()
 
     with patch('cli.states.ShowBuild', show_build_state):
         list_builds._show_build(build=build)
 
     show_build_state.assert_called_once_with(build)
+
+
+def test_show_build_has_correct_attributes(show_build, build):
+    assert show_build._header == 'BUILD NAME'
+    assert show_build._build == build
+    assert show_build._transitions == [Transition(1, 'Edit', show_build._edit_build),
+                                       Transition(2, 'Delete', show_build._delete_build),
+                                       Transition(0, 'Back', show_build._back)]
+
+
+def test_show_build__execute_does_correct_execution(show_build):
+    show_build._print_build = Mock()
+    show_build._show_transitions = Mock()
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print):
+        show_build._execute()
+
+    show_build._print_build.assert_called_once_with(show_build._build)
+    show_build._show_transitions.assert_called_once_with()
+    mocked_print.assert_has_calls([call(f'{show_build._header}\n'),
+                                   call()])
+
+
+def test_show_build__edit_build_returns_correct_state(show_build):
+    returned_state = show_build._edit_build()
+
+    assert isinstance(returned_state, EditBuild)
+
+
+def test_show_build__edit_build_uses_correct_build(show_build, build):
+    edit_build_state = Mock()
+
+    with patch('cli.states.EditBuild', edit_build_state):
+        show_build._edit_build()
+
+    edit_build_state.assert_called_once_with(build)
+
+
+def test_show_build__delete_build_returns_correct_state(show_build):
+    returned_state = show_build._delete_build()
+
+    assert isinstance(returned_state, State)
+
+
+def test_show_build__back_returns_correct_state(show_build):
+    returned_state = show_build._back()
+
+    assert isinstance(returned_state, ListBuilds)
