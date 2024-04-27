@@ -59,6 +59,11 @@ def edit_build(build):
     return EditBuild(build=build)
 
 
+@fixture
+def edit_build_name(build):
+    return EditBuildName(build=build)
+
+
 def test_state_has_correct_attributes(state):
     assert state._builds == []
     assert state._header == ''
@@ -585,3 +590,65 @@ def test_edit_build__discard_returns_correct_state(edit_build):
     returned_state = edit_build._discard()
 
     assert isinstance(returned_state, Start)
+
+
+def test_edit_build_name_has_correct_attributes(edit_build_name, build):
+    assert edit_build_name._header == 'BUILD CREATOR - NAME'
+    assert edit_build_name._build == build
+    assert edit_build_name._name is None
+    assert edit_build_name._transitions == [Transition(1, 'Confirm', edit_build_name._confirm),
+                                            Transition(0, 'Discard', edit_build_name._discard)]
+
+
+def test_edit_build_name__execute_does_correct_execution(edit_build_name):
+    name = 'Sniping Nagato'
+    edit_build_name._show_transitions = Mock()
+    mocked_input = Mock(return_value=name)
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print), patch('builtins.input', mocked_input):
+        edit_build_name._execute()
+
+    assert edit_build_name._name == name
+    edit_build_name._show_transitions.assert_called_once_with()
+    mocked_print.assert_has_calls([call(f'{edit_build_name._header}\n'),
+                                   call()])
+
+
+def test_edit_build_name__confirm_returns_correct_state(edit_build_name):
+    returned_state = edit_build_name._confirm()
+
+    assert isinstance(returned_state, EditBuild)
+
+
+def test_edit_build_name__confirm_uses_correct_build(edit_build_name, build):
+    edit_build_state = Mock()
+
+    with patch('cli.states.EditBuild', edit_build_state):
+        edit_build_name._confirm()
+
+    edit_build_state.assert_called_once_with(build)
+
+
+def test_edit_build_name__confirm_changes_build_name(edit_build_name, build):
+    name = 'Sniping Nagato'
+    edit_build_name._name = name
+
+    edit_build_name._confirm()
+
+    assert build.name == name
+
+
+def test_edit_build_name__discard_returns_correct_state(edit_build_name):
+    returned_state = edit_build_name._discard()
+
+    assert isinstance(returned_state, EditBuild)
+
+
+def test_edit_build_name__discard_uses_correct_build(edit_build_name, build):
+    edit_build_state = Mock()
+
+    with patch('cli.states.EditBuild', edit_build_state):
+        edit_build_name._discard()
+
+    edit_build_state.assert_called_once_with(build)
