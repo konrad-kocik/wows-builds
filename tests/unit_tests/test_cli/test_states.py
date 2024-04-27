@@ -1,7 +1,18 @@
 from pytest import fixture
 from unittest.mock import Mock, patch, call
 
-from cli.states import Transition, State, Start, Exit, ListBuilds, ShowBuild, EditBuild
+from cli.states import (Transition,
+                        State,
+                        Start,
+                        Exit,
+                        ListBuilds,
+                        ShowBuild,
+                        EditBuild,
+                        EditBuildName,
+                        EditBuildShip,
+                        EditBuildAddSkill,
+                        EditBuildAddUpgrade,
+                        EditBuildAddConsumable)
 
 
 @fixture
@@ -9,6 +20,7 @@ def build():
     build = Mock()
     build.name = 'build name'
     build.total_skills_cost = 0
+    build.ship = Mock()
     return build
 
 
@@ -40,6 +52,11 @@ def list_builds():
 @fixture
 def show_build(build):
     return ShowBuild(build=build)
+
+
+@fixture
+def edit_build(build):
+    return EditBuild(build=build)
 
 
 def test_state_has_correct_attributes(state):
@@ -391,3 +408,180 @@ def test_show_build__back_returns_correct_state(show_build):
     returned_state = show_build._back()
 
     assert isinstance(returned_state, ListBuilds)
+
+
+def test_edit_build_when_build_not_provided_then_has_correct_attributes(build):
+    build.ship = None
+    build.name = None
+    build_ctor = Mock(return_value=build)
+
+    with patch('cli.states.Build', build_ctor):
+        edit_build = EditBuild()
+
+    assert edit_build._header == 'BUILD CREATOR'
+    build_ctor.assert_called_once_with()
+    assert edit_build._build == build
+    assert edit_build._transitions == [Transition(1, 'Choose name', edit_build._choose_name),
+                                       Transition(2, 'Choose ship', edit_build._choose_ship),
+                                       Transition(0, 'Discard', edit_build._discard)]
+
+
+def test_edit_build_when_build_provided_then_has_correct_attributes(edit_build, build):
+    assert edit_build._header == 'BUILD CREATOR'
+    assert edit_build._build == build
+    assert edit_build._transitions == [Transition(1, 'Choose name', edit_build._choose_name),
+                                       Transition(2, 'Choose ship', edit_build._choose_ship),
+                                       Transition(3, 'Add skill', edit_build._add_skill),
+                                       Transition(4, 'Add upgrade', edit_build._add_upgrade),
+                                       Transition(5, 'Add consumable', edit_build._add_consumable),
+                                       Transition(9, 'Save', edit_build._save),
+                                       Transition(0, 'Discard', edit_build._discard)]
+
+
+def test_edit_build__execute_when_build_has_name_then_correct_execution_is_done(edit_build, build):
+    edit_build._print_build = Mock()
+    edit_build._show_transitions = Mock()
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print):
+        edit_build._execute()
+
+    edit_build._print_build.assert_called_once_with(edit_build._build)
+    edit_build._show_transitions.assert_called_once_with()
+    mocked_print.assert_has_calls([call(f'{edit_build._header}'),
+                                   call(),
+                                   call(f'Name: {edit_build._build.name}'),
+                                   call()])
+    assert mocked_print.call_count == 4
+
+
+def test_edit_build__execute_when_build_has_no_name_but_has_ship_then_correct_execution_is_done(edit_build, build):
+    build.name = None
+    edit_build._print_build = Mock()
+    edit_build._show_transitions = Mock()
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print):
+        edit_build._execute()
+
+    edit_build._print_build.assert_called_once_with(edit_build._build)
+    edit_build._show_transitions.assert_called_once_with()
+    mocked_print.assert_has_calls([call(f'{edit_build._header}'),
+                                   call(),
+                                   call()])
+    assert mocked_print.call_count == 3
+
+
+def test_edit_build__execute_when_build_has_no_name_and_no_ship_then_correct_execution_is_done(edit_build, build):
+    build.name = None
+    build.ship = None
+    edit_build._print_build = Mock()
+    edit_build._show_transitions = Mock()
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print):
+        edit_build._execute()
+
+    edit_build._print_build.assert_called_once_with(edit_build._build)
+    edit_build._show_transitions.assert_called_once_with()
+    mocked_print.assert_has_calls([call(f'{edit_build._header}'),
+                                   call()])
+    assert mocked_print.call_count == 2
+
+
+def test_edit_build__choose_name_returns_correct_state(edit_build):
+    returned_state = edit_build._choose_name()
+
+    assert isinstance(returned_state, EditBuildName)
+
+
+def test_edit_build__choose_name_uses_correct_build(edit_build, build):
+    edit_build_name_state = Mock()
+
+    with patch('cli.states.EditBuildName', edit_build_name_state):
+        edit_build._choose_name()
+
+    edit_build_name_state.assert_called_once_with(build)
+
+
+def test_edit_build__choose_ship_returns_correct_state(edit_build):
+    returned_state = edit_build._choose_ship()
+
+    assert isinstance(returned_state, EditBuildShip)
+
+
+def test_edit_build__choose_ship_uses_correct_build(edit_build, build):
+    edit_build_ship_state = Mock()
+
+    with patch('cli.states.EditBuildShip', edit_build_ship_state):
+        edit_build._choose_ship()
+
+    edit_build_ship_state.assert_called_once_with(build)
+
+
+def test_edit_build__add_skill_returns_correct_state(edit_build):
+    returned_state = edit_build._add_skill()
+
+    assert isinstance(returned_state, EditBuildAddSkill)
+
+
+def test_edit_build__add_skill_uses_correct_build(edit_build, build):
+    edit_build_add_skill_state = Mock()
+
+    with patch('cli.states.EditBuildAddSkill', edit_build_add_skill_state):
+        edit_build._add_skill()
+
+    edit_build_add_skill_state.assert_called_once_with(build)
+
+
+def test_edit_build__add_upgrade_returns_correct_state(edit_build):
+    returned_state = edit_build._add_upgrade()
+
+    assert isinstance(returned_state, EditBuildAddUpgrade)
+
+
+def test_edit_build__add_upgrade_uses_correct_build(edit_build, build):
+    edit_build_add_upgrade_state = Mock()
+
+    with patch('cli.states.EditBuildAddUpgrade', edit_build_add_upgrade_state):
+        edit_build._add_upgrade()
+
+    edit_build_add_upgrade_state.assert_called_once_with(build)
+
+
+def test_edit_build__add_consumable_returns_correct_state(edit_build):
+    returned_state = edit_build._add_consumable()
+
+    assert isinstance(returned_state, EditBuildAddConsumable)
+
+
+def test_edit_build__add_consumable_uses_correct_build(edit_build, build):
+    edit_build_add_consumable_state = Mock()
+
+    with patch('cli.states.EditBuildAddConsumable', edit_build_add_consumable_state):
+        edit_build._add_consumable()
+
+    edit_build_add_consumable_state.assert_called_once_with(build)
+
+
+def test_edit_build__save_returns_correct_state(edit_build):
+    with patch('cli.states.save_builds'):
+        returned_state = edit_build._save()
+
+    assert isinstance(returned_state, Start)
+
+
+def test_edit_build__save_saves_correct_build(edit_build, build):
+    State._builds = []
+    save_builds = Mock()
+
+    with patch('cli.states.save_builds', save_builds):
+        edit_build._save()
+
+    save_builds.assert_called_once_with([build])
+
+
+def test_edit_build__discard_returns_correct_state(edit_build):
+    returned_state = edit_build._discard()
+
+    assert isinstance(returned_state, Start)
