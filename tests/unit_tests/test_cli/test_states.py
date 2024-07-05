@@ -64,6 +64,11 @@ def edit_build_name(build):
     return EditBuildName(build=build)
 
 
+@fixture
+def edit_build_ship(build):
+    return EditBuildShip(build=build)
+
+
 def test_state_has_correct_attributes(state):
     assert state._builds == []
     assert state._header == ''
@@ -279,7 +284,7 @@ def test_list_builds__execute_does_correct_execution(list_builds):
     assert Transition(0, 'Back', list_builds._start) in list_builds._transitions
 
 
-def test_list_builds__show_grouped_builds_prints_builds_in_correct_order(list_builds):
+def test_list_builds__show_grouped_builds_groups_builds_in_correct_order(list_builds):
     build_battleship_1 = Mock()
     build_battleship_1.ship.ship_class = 'Battleship'
     build_battleship_1.name = 'build_battleship_1'
@@ -611,6 +616,7 @@ def test_edit_build_name__execute_does_correct_execution(edit_build_name):
 
     assert edit_build_name._name == name
     edit_build_name._show_transitions.assert_called_once_with()
+    mocked_input.assert_called_once_with('Enter build name: ')
     mocked_print.assert_has_calls([call(f'{edit_build_name._header}\n'),
                                    call()])
 
@@ -650,5 +656,143 @@ def test_edit_build_name__discard_uses_correct_build(edit_build_name, build):
 
     with patch('cli.states.EditBuild', edit_build_state):
         edit_build_name._discard()
+
+    edit_build_state.assert_called_once_with(build)
+
+
+def test_edit_build_ship_has_correct_attributes(edit_build_ship, build):
+    assert edit_build_ship._header == 'BUILD CREATOR - SHIP'
+    assert edit_build_ship._build == build
+    assert edit_build_ship._ship is None
+    assert edit_build_ship._transitions == [Transition(1, 'Confirm', edit_build_ship._confirm),
+                                            Transition(0, 'Discard', edit_build_ship._discard)]
+
+
+def test_edit_build_ship__execute_does_correct_execution(edit_build_ship):
+    grouped_ships = [Mock(), Mock()]
+    edit_build_ship._show_grouped_ships = Mock(return_value=grouped_ships)
+    edit_build_ship._select_ship = Mock()
+    edit_build_ship._show_transitions = Mock()
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print):
+        edit_build_ship._execute()
+
+    edit_build_ship._show_grouped_ships.assert_called_once_with()
+    edit_build_ship._select_ship.assert_called_once_with(grouped_ships)
+    edit_build_ship._show_transitions.assert_called_once_with()
+    mocked_print.assert_called_once_with(f'{edit_build_ship._header}\n')
+
+
+def test_edit_build_ship__show_grouped_ships_groups_builds_in_correct_order(edit_build_ship):
+    ship_1 = Mock()
+    ship_1.ship_class = 'Destroyer'
+    ship_1.nation = 'Japan'
+    ship_2 = Mock()
+    ship_2.ship_class = 'Battleship'
+    ship_2.nation = 'USA'
+    ship_2.name = 'North Carolina'
+    ship_3 = Mock()
+    ship_3.ship_class = 'Battleship'
+    ship_3.nation = 'Germany'
+    ship_3.name = 'Gneisenau'
+    ship_4 = Mock()
+    ship_4.ship_class = 'Cruiser'
+    ship_4.nation = 'USA'
+    ship_5 = Mock()
+    ship_5.ship_class = 'Destroyer'
+    ship_5.nation = 'Japan'
+    ships = [ship_1,
+             ship_2,
+             ship_3,
+             ship_4,
+             ship_5]
+    mocked_print = Mock()
+
+    with patch('cli.states.ships', ships), patch('builtins.print', mocked_print):
+        grouped_ships = edit_build_ship._show_grouped_ships()
+
+    assert grouped_ships == [ship_3,
+                             ship_2,
+                             ship_4,
+                             ship_1,
+                             ship_5]
+    mocked_print.assert_has_calls([call('Battleships:'),
+                                   call(f'  Germany:'),
+                                   call(f'    [1] {ship_3.name}'),
+                                   call('  USA:'),
+                                   call(f'    [2] {ship_2.name}'),
+                                   call('Cruisers:'),
+                                   call('  USA:'),
+                                   call(f'    [3] {ship_4.name}'),
+                                   call('Destroyers:'),
+                                   call('  Japan:'),
+                                   call(f'    [4] {ship_1.name}'),
+                                   call(f'    [5] {ship_5.name}')])
+
+
+def test_edit_build_ship__select_ship_selects_correct_ship(edit_build_ship, build):
+    ship_1 = Mock()
+    ship_2 = Mock()
+    grouped_ships = [ship_1,
+                     ship_2]
+    build.ship = None
+    mocked_input = Mock(return_value='2')
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print), patch('builtins.input', mocked_input):
+        edit_build_ship._select_ship(grouped_ships=grouped_ships)
+
+    assert edit_build_ship._ship == ship_2
+    mocked_input.assert_called_once_with('\nChoose ship: ')
+    mocked_print.assert_called_once_with()
+
+
+def test_edit_build_ship__select_ship_prints_warning_when_overriding_ship(edit_build_ship):
+    mocked_input = Mock(return_value='1')
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print), patch('builtins.input', mocked_input):
+        edit_build_ship._select_ship(grouped_ships=[Mock()])
+
+    mocked_print.assert_has_calls([call('\nWARNING: changing ship will reset build skills, upgrades and consumables'),
+                                   call()])
+
+
+def test_edit_build_ship__confirm_returns_correct_state(edit_build_ship):
+    returned_state = edit_build_ship._confirm()
+
+    assert isinstance(returned_state, EditBuild)
+
+
+def test_edit_build_ship__confirm_uses_correct_build(edit_build_ship, build):
+    edit_build_state = Mock()
+
+    with patch('cli.states.EditBuild', edit_build_state):
+        edit_build_ship._confirm()
+
+    edit_build_state.assert_called_once_with(build)
+
+
+def test_edit_build_ship__confirm_changes_build_ship(edit_build_ship, build):
+    ship = Mock()
+    edit_build_ship._ship = ship
+
+    edit_build_ship._confirm()
+
+    assert build.ship == ship
+
+
+def test_edit_build_ship__discard_returns_correct_state(edit_build_ship):
+    returned_state = edit_build_ship._discard()
+
+    assert isinstance(returned_state, EditBuild)
+
+
+def test_edit_build_ship__discard_uses_correct_build(edit_build_ship, build):
+    edit_build_state = Mock()
+
+    with patch('cli.states.EditBuild', edit_build_state):
+        edit_build_ship._discard()
 
     edit_build_state.assert_called_once_with(build)
