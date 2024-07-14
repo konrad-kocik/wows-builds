@@ -79,6 +79,11 @@ def edit_build_add_upgrade(build):
     return EditBuildAddUpgrade(build=build)
 
 
+@fixture
+def edit_build_add_consumable(build):
+    return EditBuildAddConsumable(build=build)
+
+
 def test_state_has_correct_attributes(state):
     assert state._builds == []
     assert state._header == ''
@@ -1041,5 +1046,117 @@ def test_edit_build_add_upgrade__discard_uses_correct_build(edit_build_add_upgra
 
     with patch('cli.states.EditBuild', edit_build_state):
         edit_build_add_upgrade._discard()
+
+    edit_build_state.assert_called_once_with(build)
+
+
+def test_edit_build_add_consumable_has_correct_attributes(edit_build_add_consumable, build):
+    assert edit_build_add_consumable._header == 'BUILD CREATOR - ADD CONSUMABLE'
+    assert edit_build_add_consumable._build == build
+    assert edit_build_add_consumable._consumable is None
+    assert edit_build_add_consumable._consumables == []
+    assert edit_build_add_consumable._transitions == [Transition(1, 'Confirm', edit_build_add_consumable._confirm),
+                                                      Transition(0, 'Discard', edit_build_add_consumable._discard)]
+
+
+def test_edit_build_add_consumable__execute_does_correct_execution(edit_build_add_consumable):
+    edit_build_add_consumable._show_grouped_consumables = Mock()
+    edit_build_add_consumable._select_consumable = Mock()
+    edit_build_add_consumable._show_transitions = Mock()
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print):
+        edit_build_add_consumable._execute()
+
+    edit_build_add_consumable._show_grouped_consumables.assert_called_once_with()
+    edit_build_add_consumable._select_consumable.assert_called_once_with()
+    edit_build_add_consumable._show_transitions.assert_called_once_with()
+    mocked_print.assert_called_once_with(f'{edit_build_add_consumable._header}\n')
+
+
+def test_edit_build_add_consumable__show_grouped_consumables_groups_valid_consumables_in_correct_order(edit_build_add_consumable, build):
+    consumable_1 = 'Catapult Fighter'
+    consumable_2 = 'Spotting Aircraft'
+    consumable_3 = 'Defensive AA Fire'
+    consumable_4 = 'Hydroacoustic Search'
+    consumable_5 = 'Damage Control Party'
+
+    build.ship.consumables = {'slot_3': [consumable_1],
+                              'slot_1': [consumable_2, consumable_3],
+                              'slot_2': [consumable_4, consumable_5]}
+    build.has_consumable = Mock(side_effect=[False,
+                                             False,
+                                             False,
+                                             True,
+                                             False])
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print):
+        edit_build_add_consumable._show_grouped_consumables()
+
+    assert edit_build_add_consumable._consumables == [consumable_2,
+                                                      consumable_3,
+                                                      consumable_4,
+                                                      consumable_1]
+    mocked_print.assert_has_calls([call('Slot 1 consumables:'),
+                                   call(f'  [1] {consumable_2}'),
+                                   call(f'  [2] {consumable_3}'),
+                                   call('Slot 2 consumables:'),
+                                   call(f'  [3] {consumable_4}'),
+                                   call('Slot 3 consumables:'),
+                                   call(f'  [4] {consumable_1}')])
+
+
+def test_edit_build_add_consumable__select_consumable_selects_correct_consumable(edit_build_add_consumable, build):
+    consumable_1 = Mock()
+    consumable_2 = Mock()
+    edit_build_add_consumable._consumables = {0: consumable_1,
+                                              1: consumable_2}
+    mocked_input = Mock(return_value='2')
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print), patch('builtins.input', mocked_input):
+        edit_build_add_consumable._select_consumable()
+
+    assert edit_build_add_consumable._consumable == consumable_2
+    mocked_input.assert_called_once_with('\nChoose consumable: ')
+    mocked_print.assert_called_once_with()
+
+
+def test_edit_build_add_consumable__confirm_returns_correct_state(edit_build_add_consumable):
+    returned_state = edit_build_add_consumable._confirm()
+
+    assert isinstance(returned_state, EditBuild)
+
+
+def test_edit_build_add_consumable__confirm_uses_correct_build(edit_build_add_consumable, build):
+    edit_build_state = Mock()
+
+    with patch('cli.states.EditBuild', edit_build_state):
+        edit_build_add_consumable._confirm()
+
+    edit_build_state.assert_called_once_with(build)
+
+
+def test_edit_build_add_consumable__confirm_adds_consumable_to_build(edit_build_add_consumable, build):
+    consumable = Mock()
+    edit_build_add_consumable._consumable = consumable
+
+    edit_build_add_consumable._confirm()
+
+    build.add_consumable.assert_called_once_with(consumable)
+
+
+def test_edit_build_add_consumable__discard_returns_correct_state(edit_build_add_consumable):
+    returned_state = edit_build_add_consumable._discard()
+
+    assert isinstance(returned_state, EditBuild)
+
+
+def test_edit_build_add_consumable__discard_uses_correct_build(edit_build_add_consumable, build):
+    edit_build_state = Mock()
+
+    with patch('cli.states.EditBuild', edit_build_state):
+        edit_build_add_consumable._discard()
 
     edit_build_state.assert_called_once_with(build)

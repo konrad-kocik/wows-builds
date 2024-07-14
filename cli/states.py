@@ -377,7 +377,7 @@ class EditBuildAddConsumable(State):
         self._show_transitions()
 
     def _show_grouped_consumables(self):
-        consumable_slots = sorted(set([slot_name for slot_name in self._build.ship.consumables.keys()]))
+        consumable_slots = sorted([slot_name for slot_name in self._build.ship.consumables.keys()])
         consumable_id = 0
 
         for consumable_slot in consumable_slots:
