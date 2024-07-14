@@ -301,7 +301,7 @@ class EditBuildAddSkill(State):
         for skill_cost in skill_costs:
             print(f'{skill_cost} point skills:')
             for skill_id, skill in enumerate(self._build.ship.skills, start=1):
-                if skill.cost == skill_cost and not self._build.has_skill(skill) and total_skill_cost + skill.cost <= 21:
+                if skill.cost == skill_cost and not self._build.has_skill(skill):
                     print(f'  [{skill_id}] {skill.name}')
 
     def _select_skill(self):
