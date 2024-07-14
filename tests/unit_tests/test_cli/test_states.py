@@ -69,6 +69,11 @@ def edit_build_ship(build):
     return EditBuildShip(build=build)
 
 
+@fixture
+def edit_build_add_skill(build):
+    return EditBuildAddSkill(build=build)
+
+
 def test_state_has_correct_attributes(state):
     assert state._builds == []
     assert state._header == ''
@@ -794,5 +799,129 @@ def test_edit_build_ship__discard_uses_correct_build(edit_build_ship, build):
 
     with patch('cli.states.EditBuild', edit_build_state):
         edit_build_ship._discard()
+
+    edit_build_state.assert_called_once_with(build)
+
+
+def test_edit_build_add_skill_has_correct_attributes(edit_build_add_skill, build):
+    assert edit_build_add_skill._header == 'BUILD CREATOR - ADD SKILL'
+    assert edit_build_add_skill._build == build
+    assert edit_build_add_skill._skill is None
+    assert edit_build_add_skill._transitions == [Transition(1, 'Confirm', edit_build_add_skill._confirm),
+                                                 Transition(0, 'Discard', edit_build_add_skill._discard)]
+
+
+def test_edit_build_add_skill__execute_does_correct_execution(edit_build_add_skill):
+    edit_build_add_skill._show_grouped_skills = Mock()
+    edit_build_add_skill._select_skill = Mock()
+    edit_build_add_skill._show_transitions = Mock()
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print):
+        edit_build_add_skill._execute()
+
+    edit_build_add_skill._show_grouped_skills.assert_called_once_with()
+    edit_build_add_skill._select_skill.assert_called_once_with()
+    edit_build_add_skill._show_transitions.assert_called_once_with()
+    mocked_print.assert_called_once_with(f'{edit_build_add_skill._header}\n')
+
+
+def test_edit_build_add_skill__show_grouped_skills_groups_only_correct_skills_in_correct_order(edit_build_add_skill, build):
+    skill_1 = Mock()
+    skill_1.cost = 3
+    skill_1.name = 'Super-Heavy AP Shells'
+    skill_2 = Mock()
+    skill_2.cost = 1
+    skill_2.name = 'Gun Feeder'
+    skill_3 = Mock()
+    skill_3.cost = 1
+    skill_3.name = 'Demolition Expert'
+    skill_4 = Mock()
+    skill_4.cost = 2
+    skill_4.name = 'Vigilance'
+    skill_5 = Mock()
+    skill_5.cost = 4
+    skill_5.name = 'Manual Secondary Battery Aiming'
+    skill_6 = Mock()
+    skill_6.cost = 1
+    skill_6.name = 'Incoming Fire Alert'
+    build.ship.skills = [skill_1,
+                         skill_2,
+                         skill_3,
+                         skill_4,
+                         skill_5,
+                         skill_6]
+    build.total_skills_cost = 18
+    build.has_skill = Mock(side_effect=[False,
+                                        False,
+                                        True,
+                                        False,
+                                        False,
+                                        False])
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print):
+        edit_build_add_skill._show_grouped_skills()
+
+    mocked_print.assert_has_calls([call(f'Total skill cost: {build.total_skills_cost}\n'),
+                                   call('1 point skills:'),
+                                   call(f'  [2] {skill_2.name}'),
+                                   call(f'  [3] {skill_3.name}'),
+                                   call('2 point skills:'),
+                                   call(f'  [4] {skill_4.name}'),
+                                   call('3 point skills:'),
+                                   call(f'  [1] {skill_1.name}')])
+
+
+def test_edit_build_add_skill__select_skill_selects_correct_skill(edit_build_add_skill, build):
+    skill_1 = Mock()
+    skill_2 = Mock()
+    build.ship.skills = {0: skill_1,
+                         1: skill_2}
+    mocked_input = Mock(return_value='2')
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print), patch('builtins.input', mocked_input):
+        edit_build_add_skill._select_skill()
+
+    assert edit_build_add_skill._skill == skill_2
+    mocked_input.assert_called_once_with('\nChoose skill: ')
+    mocked_print.assert_called_once_with()
+
+
+def test_edit_build_add_skill__confirm_returns_correct_state(edit_build_add_skill):
+    returned_state = edit_build_add_skill._confirm()
+
+    assert isinstance(returned_state, EditBuild)
+
+
+def test_edit_build_add_skill__confirm_uses_correct_build(edit_build_add_skill, build):
+    edit_build_state = Mock()
+
+    with patch('cli.states.EditBuild', edit_build_state):
+        edit_build_add_skill._confirm()
+
+    edit_build_state.assert_called_once_with(build)
+
+
+def test_edit_build_add_skill__confirm_adds_skill_to_build(edit_build_add_skill, build):
+    skill = Mock()
+    edit_build_add_skill._skill = skill
+    edit_build_add_skill._confirm()
+
+    build.add_skill.assert_called_once_with(skill)
+
+
+def test_edit_build_add_skill__discard_returns_correct_state(edit_build_add_skill):
+    returned_state = edit_build_add_skill._discard()
+
+    assert isinstance(returned_state, EditBuild)
+
+
+def test_edit_build_add_skill__discard_uses_correct_build(edit_build_add_skill, build):
+    edit_build_state = Mock()
+
+    with patch('cli.states.EditBuild', edit_build_state):
+        edit_build_add_skill._discard()
 
     edit_build_state.assert_called_once_with(build)
