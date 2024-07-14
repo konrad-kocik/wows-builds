@@ -335,7 +335,7 @@ class EditBuildAddUpgrade(State):
         self._show_transitions()
 
     def _show_grouped_upgrades(self):
-        upgrade_slots = sorted(set([slot_name for slot_name in self._build.ship.upgrades.keys()]))
+        upgrade_slots = sorted([slot_name for slot_name in self._build.ship.upgrades.keys()])
         upgrade_id = 0
 
         for upgrade_slot in upgrade_slots:

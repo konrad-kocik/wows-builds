@@ -74,6 +74,11 @@ def edit_build_add_skill(build):
     return EditBuildAddSkill(build=build)
 
 
+@fixture
+def edit_build_add_upgrade(build):
+    return EditBuildAddUpgrade(build=build)
+
+
 def test_state_has_correct_attributes(state):
     assert state._builds == []
     assert state._header == ''
@@ -826,7 +831,7 @@ def test_edit_build_add_skill__execute_does_correct_execution(edit_build_add_ski
     mocked_print.assert_called_once_with(f'{edit_build_add_skill._header}\n')
 
 
-def test_edit_build_add_skill__show_grouped_skills_groups_only_correct_skills_in_correct_order(edit_build_add_skill, build):
+def test_edit_build_add_skill__show_grouped_skills_groups_valid_skills_in_correct_order(edit_build_add_skill, build):
     skill_1 = Mock()
     skill_1.cost = 3
     skill_1.name = 'Super-Heavy AP Shells'
@@ -907,6 +912,7 @@ def test_edit_build_add_skill__confirm_uses_correct_build(edit_build_add_skill, 
 def test_edit_build_add_skill__confirm_adds_skill_to_build(edit_build_add_skill, build):
     skill = Mock()
     edit_build_add_skill._skill = skill
+
     edit_build_add_skill._confirm()
 
     build.add_skill.assert_called_once_with(skill)
@@ -923,5 +929,117 @@ def test_edit_build_add_skill__discard_uses_correct_build(edit_build_add_skill, 
 
     with patch('cli.states.EditBuild', edit_build_state):
         edit_build_add_skill._discard()
+
+    edit_build_state.assert_called_once_with(build)
+
+
+def test_edit_build_add_upgrade_has_correct_attributes(edit_build_add_upgrade, build):
+    assert edit_build_add_upgrade._header == 'BUILD CREATOR - ADD UPGRADE'
+    assert edit_build_add_upgrade._build == build
+    assert edit_build_add_upgrade._upgrade is None
+    assert edit_build_add_upgrade._upgrades == []
+    assert edit_build_add_upgrade._transitions == [Transition(1, 'Confirm', edit_build_add_upgrade._confirm),
+                                                   Transition(0, 'Discard', edit_build_add_upgrade._discard)]
+
+
+def test_edit_build_add_upgrade__execute_does_correct_execution(edit_build_add_upgrade):
+    edit_build_add_upgrade._show_grouped_upgrades = Mock()
+    edit_build_add_upgrade._select_upgrade = Mock()
+    edit_build_add_upgrade._show_transitions = Mock()
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print):
+        edit_build_add_upgrade._execute()
+
+    edit_build_add_upgrade._show_grouped_upgrades.assert_called_once_with()
+    edit_build_add_upgrade._select_upgrade.assert_called_once_with()
+    edit_build_add_upgrade._show_transitions.assert_called_once_with()
+    mocked_print.assert_called_once_with(f'{edit_build_add_upgrade._header}\n')
+
+
+def test_edit_build_add_upgrade__show_grouped_skills_groups_valid_upgrades_in_correct_order(edit_build_add_upgrade, build):
+    upgrade_1 = 'Main Battery Modification 2'
+    upgrade_2 = 'Main Armaments Modification 1'
+    upgrade_3 = 'Auxiliary Armaments Modification 1'
+    upgrade_4 = 'Engine Room Protection'
+    upgrade_5 = 'Hydroacoustic Search Modification 1'
+
+    build.ship.upgrades = {'slot_3': [upgrade_1],
+                           'slot_1': [upgrade_2, upgrade_3],
+                           'slot_2': [upgrade_4, upgrade_5]}
+    build.has_upgrade = Mock(side_effect=[False,
+                                          False,
+                                          False,
+                                          True,
+                                          False])
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print):
+        edit_build_add_upgrade._show_grouped_upgrades()
+
+    assert edit_build_add_upgrade._upgrades == [upgrade_2,
+                                                upgrade_3,
+                                                upgrade_4,
+                                                upgrade_1]
+    mocked_print.assert_has_calls([call('Slot 1 upgrades:'),
+                                   call(f'  [1] {upgrade_2}'),
+                                   call(f'  [2] {upgrade_3}'),
+                                   call('Slot 2 upgrades:'),
+                                   call(f'  [3] {upgrade_4}'),
+                                   call('Slot 3 upgrades:'),
+                                   call(f'  [4] {upgrade_1}')])
+
+
+def test_edit_build_add_upgrade__select_upgrade_selects_correct_upgrade(edit_build_add_upgrade, build):
+    upgrade_1 = Mock()
+    upgrade_2 = Mock()
+    edit_build_add_upgrade._upgrades = {0: upgrade_1,
+                                        1: upgrade_2}
+    mocked_input = Mock(return_value='2')
+    mocked_print = Mock()
+
+    with patch('builtins.print', mocked_print), patch('builtins.input', mocked_input):
+        edit_build_add_upgrade._select_upgrade()
+
+    assert edit_build_add_upgrade._upgrade == upgrade_2
+    mocked_input.assert_called_once_with('\nChoose upgrade: ')
+    mocked_print.assert_called_once_with()
+
+
+def test_edit_build_add_upgrade__confirm_returns_correct_state(edit_build_add_upgrade):
+    returned_state = edit_build_add_upgrade._confirm()
+
+    assert isinstance(returned_state, EditBuild)
+
+
+def test_edit_build_add_upgrade__confirm_uses_correct_build(edit_build_add_upgrade, build):
+    edit_build_state = Mock()
+
+    with patch('cli.states.EditBuild', edit_build_state):
+        edit_build_add_upgrade._confirm()
+
+    edit_build_state.assert_called_once_with(build)
+
+
+def test_edit_build_add_upgrade__confirm_adds_upgrade_to_build(edit_build_add_upgrade, build):
+    upgrade = Mock()
+    edit_build_add_upgrade._upgrade = upgrade
+
+    edit_build_add_upgrade._confirm()
+
+    build.add_upgrade.assert_called_once_with(upgrade)
+
+
+def test_edit_build_add_upgrade__discard_returns_correct_state(edit_build_add_upgrade):
+    returned_state = edit_build_add_upgrade._discard()
+
+    assert isinstance(returned_state, EditBuild)
+
+
+def test_edit_build_add_upgrade__discard_uses_correct_build(edit_build_add_upgrade, build):
+    edit_build_state = Mock()
+
+    with patch('cli.states.EditBuild', edit_build_state):
+        edit_build_add_upgrade._discard()
 
     edit_build_state.assert_called_once_with(build)
