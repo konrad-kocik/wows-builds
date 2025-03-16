@@ -295,6 +295,21 @@ def test_has_upgrade_when_upgrade_not_present_then_returns_false(build, upgrade)
     assert build.has_upgrade(upgrade=upgrade) is False
 
 
+def test_remove_upgrade_when_upgrade_is_not_available_then_error_is_raised(build, upgrade):
+    with raises(UpgradeNotAvailable) as exc:
+        build.remove_upgrade(upgrade=upgrade)
+
+    assert str(exc.value) == f'Upgrade {upgrade} is not available in build {build.name}'
+
+
+def test_remove_upgrade_when_upgrade_is_available_then_it_is_removed(build, upgrade):
+    build._upgrades = {'slot_1': upgrade}
+
+    build.remove_upgrade(upgrade=upgrade)
+
+    assert build._upgrades == {}
+
+
 def test_add_consumable_when_consumable_already_added_then_error_is_raised(build, consumable):
     build._consumables = {'slot_3': consumable}
 

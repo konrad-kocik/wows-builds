@@ -84,6 +84,13 @@ class Build:
         slot = self._check_if_upgrade_is_available(upgrade)
         self._upgrades[slot] = upgrade
 
+    def remove_upgrade(self, upgrade: str):
+        self._check_if_upgrade_can_be_removed(upgrade)
+        for slot, upgrade_being_checked in self._upgrades.items():
+            if upgrade_being_checked == upgrade:
+                del self._upgrades[slot]
+                break
+
     def has_upgrade(self, upgrade: str) -> bool:
         return upgrade in self._upgrades.values()
 
@@ -142,6 +149,10 @@ class Build:
                     return ship_upgrade_slot
         else:
             raise UpgradeNotAvailable(f'Upgrade {upgrade} is not available for ship {self._ship.name}')
+
+    def _check_if_upgrade_can_be_removed(self, upgrade: str):
+        if upgrade not in self._upgrades.values():
+            raise UpgradeNotAvailable(f'Upgrade {upgrade} is not available in build {self._name}')
 
     def _check_if_consumable_not_added_yet(self, consumable: str):
         if consumable in self._consumables.values():
