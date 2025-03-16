@@ -349,3 +349,26 @@ def test_serialize_returns_correct_value(build, skill, new_skill):
                                             new_skill.name],
                                  'upgrades': build._upgrades,
                                  'consumables': build._consumables}
+
+
+def test_copy_returns_independent_build_copy(build, skill, new_skill, upgrade, consumable):
+    build._skills = [skill]
+    build._upgrades = {'slot_1': upgrade}
+    build._consumables = {'slot_1': consumable}
+
+    build_copy = build.copy()
+
+    assert id(build_copy) != id(build)
+    assert build_copy._name == build._name
+    assert build_copy._ship == build._ship
+    assert build_copy._skills == build._skills
+    assert build_copy._upgrades == build._upgrades
+    assert build_copy._consumables == build._consumables
+
+    build._skills.append(new_skill)
+    build._upgrades['slot_2'] = 'Damage Control System Modification 1'
+    build._consumables['slot_2'] = 'Repair Party'
+
+    assert build_copy._skills != build._skills
+    assert build_copy._upgrades != build._upgrades
+    assert build_copy._consumables != build._consumables

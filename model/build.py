@@ -98,6 +98,13 @@ class Build:
                 'upgrades': self._upgrades,
                 'consumables': self._consumables}
 
+    def copy(self) -> 'Build':
+        build_copy = Build(name=self._name, ship=self._ship)
+        build_copy._skills = self._skills.copy()
+        build_copy._upgrades = self._upgrades.copy()
+        build_copy._consumables = self._consumables.copy()
+        return build_copy
+
     def _check_if_skill_is_not_added_yet(self, skill: Skill):
         if skill in self._skills:
             raise SkillAlreadyAdded(f'Skill {skill.name} is already added')
