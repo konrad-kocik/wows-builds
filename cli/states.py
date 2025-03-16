@@ -155,10 +155,11 @@ class ShowBuild(State):
 
 
 class EditBuild(State):
-    def __init__(self, build: Build = None):
+    def __init__(self, build: Build = None, build_backup: Build = None):
         super().__init__()
         self._header = 'BUILD CREATOR'
         self._build = build or Build()
+        self._build_backup = build_backup or self._build.copy()
         self._transitions = [Transition(1, 'Choose name', self._choose_name),
                              Transition(2, 'Choose ship', self._choose_ship),
                              Transition(0, 'Discard', self._discard)]
@@ -184,34 +185,39 @@ class EditBuild(State):
         self._show_transitions()
 
     def _choose_name(self) -> State:
-        return EditBuildName(self._build)
+        return EditBuildName(self._build, self._build_backup)
 
     def _choose_ship(self) -> State:
-        return EditBuildShip(self._build)
+        return EditBuildShip(self._build, self._build_backup)
 
     def _add_skill(self) -> State:
-        return EditBuildAddSkill(self._build)
+        return EditBuildAddSkill(self._build, self._build_backup)
 
     def _add_upgrade(self) -> State:
-        return EditBuildAddUpgrade(self._build)
+        return EditBuildAddUpgrade(self._build, self._build_backup)
 
     def _add_consumable(self) -> State:
-        return EditBuildAddConsumable(self._build)
+        return EditBuildAddConsumable(self._build, self._build_backup)
 
     def _save(self) -> State:
-        State._builds.append(self._build)
+        if self._build not in State._builds:
+            State._builds.append(self._build)
         save_builds(State._builds)
         return Start()
 
     def _discard(self) -> State:
+        if self._build in State._builds:
+            State._builds.insert(State._builds.index(self._build), self._build_backup)
+            State._builds.remove(self._build)
         return Start()
 
 
 class EditBuildName(State):
-    def __init__(self, build: Build):
+    def __init__(self, build: Build, build_backup: Build):
         super().__init__()
         self._header = 'BUILD CREATOR - NAME'
         self._build = build
+        self._build_backup = build_backup
         self._name = None
         self._transitions = [Transition(1, 'Confirm', self._confirm),
                              Transition(0, 'Discard', self._discard)]
@@ -224,17 +230,18 @@ class EditBuildName(State):
 
     def _confirm(self) -> State:
         self._build.name = self._name
-        return EditBuild(self._build)
+        return EditBuild(self._build, self._build_backup)
 
     def _discard(self) -> State:
-        return EditBuild(self._build)
+        return EditBuild(self._build, self._build_backup)
 
 
 class EditBuildShip(State):
-    def __init__(self, build: Build):
+    def __init__(self, build: Build, build_backup: Build):
         super().__init__()
         self._header = 'BUILD CREATOR - SHIP'
         self._build = build
+        self._build_backup = build_backup
         self._ship = None
         self._transitions = [Transition(1, 'Confirm', self._confirm),
                              Transition(0, 'Discard', self._discard)]
@@ -272,17 +279,18 @@ class EditBuildShip(State):
 
     def _confirm(self) -> State:
         self._build.ship = self._ship
-        return EditBuild(self._build)
+        return EditBuild(self._build, self._build_backup)
 
     def _discard(self) -> State:
-        return EditBuild(self._build)
+        return EditBuild(self._build, self._build_backup)
 
 
 class EditBuildAddSkill(State):
-    def __init__(self, build: Build):
+    def __init__(self, build: Build, build_backup: Build):
         super().__init__()
         self._header = 'BUILD CREATOR - ADD SKILL'
         self._build = build
+        self._build_backup = build_backup
         self._skill = None
         self._transitions = [Transition(1, 'Confirm', self._confirm),
                              Transition(0, 'Discard', self._discard)]
@@ -312,17 +320,18 @@ class EditBuildAddSkill(State):
 
     def _confirm(self) -> State:
         self._build.add_skill(self._skill)
-        return EditBuild(self._build)
+        return EditBuild(self._build, self._build_backup)
 
     def _discard(self) -> State:
-        return EditBuild(self._build)
+        return EditBuild(self._build, self._build_backup)
 
 
 class EditBuildAddUpgrade(State):
-    def __init__(self, build: Build):
+    def __init__(self, build: Build, build_backup: Build):
         super().__init__()
         self._header = 'BUILD CREATOR - ADD UPGRADE'
         self._build = build
+        self._build_backup = build_backup
         self._upgrade = None
         self._upgrades = []
         self._transitions = [Transition(1, 'Confirm', self._confirm),
@@ -354,17 +363,18 @@ class EditBuildAddUpgrade(State):
 
     def _confirm(self) -> State:
         self._build.add_upgrade(self._upgrade)
-        return EditBuild(self._build)
+        return EditBuild(self._build, self._build_backup)
 
     def _discard(self) -> State:
-        return EditBuild(self._build)
+        return EditBuild(self._build, self._build_backup)
 
 
 class EditBuildAddConsumable(State):
-    def __init__(self, build: Build):
+    def __init__(self, build: Build, build_backup: Build):
         super().__init__()
         self._header = 'BUILD CREATOR - ADD CONSUMABLE'
         self._build = build
+        self._build_backup = build_backup
         self._consumable = None
         self._consumables = []
         self._transitions = [Transition(1, 'Confirm', self._confirm),
@@ -396,7 +406,7 @@ class EditBuildAddConsumable(State):
 
     def _confirm(self) -> State:
         self._build.add_consumable(self._consumable)
-        return EditBuild(self._build)
+        return EditBuild(self._build, self._build_backup)
 
     def _discard(self) -> State:
-        return EditBuild(self._build)
+        return EditBuild(self._build, self._build_backup)
