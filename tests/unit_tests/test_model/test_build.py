@@ -213,6 +213,21 @@ def test_add_skill_when_total_cost_is_not_exceeded_then_skill_is_added(build, sh
     assert new_skill in build._skills
 
 
+def test_remove_skill_when_skill_is_not_available_then_error_is_raised(build, skill):
+    with raises(SkillNotAvailable) as exc:
+        build.remove_skill(skill=skill)
+
+    assert str(exc.value) == f'Skill {skill.name} is not available in build {build.name}'
+
+
+def test_remove_skill_when_skill_is_available_then_it_is_removed(build, skill):
+    build._skills = [skill]
+
+    build.remove_skill(skill=skill)
+
+    assert build._skills == []
+
+
 def test_has_skill_if_skill_present_then_returns_true(build, skill):
     build._skills = [skill]
 

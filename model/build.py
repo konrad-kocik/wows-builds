@@ -72,6 +72,10 @@ class Build:
         self._check_if_total_skills_cost_is_not_exceeded(skill)
         self._skills.append(skill)
 
+    def remove_skill(self, skill: Skill):
+        self._check_if_skill_can_be_removed(skill)
+        self._skills.remove(skill)
+
     def has_skill(self, skill: Skill) -> bool:
         return skill in self._skills
 
@@ -119,6 +123,10 @@ class Build:
     def _check_if_total_skills_cost_is_not_exceeded(self, skill: Skill):
         if sum([skill.cost for skill in self._skills]) + skill.cost > 21:
             raise TotalSkillsCostExceeded('Total cost of all skills has been exceeded')
+
+    def _check_if_skill_can_be_removed(self, skill: Skill):
+        if skill not in self._skills:
+            raise SkillNotAvailable(f'Skill {skill.name} is not available in build {self._name}')
 
     def _check_if_upgrade_not_added_yet(self, upgrade: str):
         if upgrade in self._upgrades.values():
