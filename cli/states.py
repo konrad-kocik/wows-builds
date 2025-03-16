@@ -167,11 +167,14 @@ class EditBuild(State):
         if self._build.ship and self._build.total_skills_cost < 21:
             self._transitions.insert(-1, Transition(3, 'Add skill', self._add_skill))
 
-        if self._build.ship:
-            self._transitions.insert(-1, Transition(4, 'Add upgrade', self._add_upgrade))
+        if self._build.skills:
+            self._transitions.insert(-1, Transition(4, 'Remove skill', self._remove_skill))
 
         if self._build.ship:
-            self._transitions.insert(-1, Transition(5, 'Add consumable', self._add_consumable))
+            self._transitions.insert(-1, Transition(5, 'Add upgrade', self._add_upgrade))
+
+        if self._build.ship:
+            self._transitions.insert(-1, Transition(7, 'Add consumable', self._add_consumable))
 
         if self._build.name and self._build.ship:
             self._transitions.insert(-1, Transition(9, 'Save', self._save))
@@ -192,6 +195,9 @@ class EditBuild(State):
 
     def _add_skill(self) -> State:
         return EditBuildAddSkill(self._build, self._build_backup)
+
+    def _remove_skill(self) -> State:
+        return EditBuildRemoveSkill(self._build, self._build_backup)
 
     def _add_upgrade(self) -> State:
         return EditBuildAddUpgrade(self._build, self._build_backup)
@@ -325,6 +331,44 @@ class EditBuildAddSkill(State):
     def _discard(self) -> State:
         return EditBuild(self._build, self._build_backup)
 
+
+class EditBuildRemoveSkill(State):
+    def __init__(self, build: Build, build_backup: Build):
+        super().__init__()
+        self._header = 'BUILD CREATOR - REMOVE SKILL'
+        self._build = build
+        self._build_backup = build_backup
+        self._skill = None
+        self._transitions = [Transition(1, 'Confirm', self._confirm),
+                             Transition(0, 'Discard', self._discard)]
+
+    def _execute(self):
+        print(f'{self._header}\n')
+        self._show_grouped_skills()
+        self._select_skill()
+        self._show_transitions()
+
+    def _show_grouped_skills(self):
+        skill_costs = sorted(set([skill.cost for skill in self._build.skills]))
+
+        for skill_cost in skill_costs:
+            print(f'{skill_cost} point skills:')
+            for skill_id, skill in enumerate(self._build.skills, start=1):
+                if skill.cost == skill_cost:
+                    print(f'  [{skill_id}] {skill.name}')
+
+    def _select_skill(self):
+        skill_id = int(input('\nChoose skill: '))
+        skill = self._build.skills[skill_id - 1]
+        self._skill = skill
+        print()
+
+    def _confirm(self) -> State:
+        self._build.remove_skill(self._skill)
+        return EditBuild(self._build, self._build_backup)
+
+    def _discard(self) -> State:
+        return EditBuild(self._build, self._build_backup)
 
 class EditBuildAddUpgrade(State):
     def __init__(self, build: Build, build_backup: Build):
