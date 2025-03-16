@@ -354,6 +354,21 @@ def test_add_consumable_when_slot_is_empty_then_consumable_is_added_to_correct_s
     assert build._consumables == {'slot_3': consumable}
 
 
+def test_remove_consumable_when_consumable_is_not_available_then_error_is_raised(build, consumable):
+    with raises(ConsumableNotAvailable) as exc:
+        build.remove_consumable(consumable=consumable)
+
+    assert str(exc.value) == f'Consumable {consumable} is not available in build {build.name}'
+
+
+def test_remove_consumable_when_consumable_is_available_then_it_is_removed(build, consumable):
+    build._consumables = {'slot_1': consumable}
+
+    build.remove_consumable(consumable=consumable)
+
+    assert build._consumables == {}
+
+
 def test_has_consumable_when_consumable_present_then_returns_true(build, consumable):
     build._consumables = {'slot_3': consumable}
 

@@ -99,6 +99,13 @@ class Build:
         slot = self._check_if_consumable_is_available(consumable)
         self._consumables[slot] = consumable
 
+    def remove_consumable(self, consumable: str):
+        self._check_if_consumable_can_be_removed(consumable)
+        for slot, consumable_being_checked in self._consumables.items():
+            if consumable_being_checked == consumable:
+                del self._consumables[slot]
+                break
+
     def has_consumable(self, consumable: str) -> bool:
         return consumable in self._consumables.values()
 
@@ -168,3 +175,7 @@ class Build:
                     return ship_consumable_slot
         else:
             raise ConsumableNotAvailable(f'Consumable {consumable} is not available for ship {self._ship.name}')
+
+    def _check_if_consumable_can_be_removed(self, consumable: str):
+        if consumable not in self._consumables.values():
+            raise ConsumableNotAvailable(f'Consumable {consumable} is not available in build {self._name}')
