@@ -179,6 +179,9 @@ class EditBuild(State):
         if self._build.ship:
             self._transitions.insert(-1, Transition(7, 'Add consumable', self._add_consumable))
 
+        if self._build.consumables:
+            self._transitions.insert(-1, Transition(8, 'Remove consumable', self._remove_consumable))
+
         if self._build.name and self._build.ship:
             self._transitions.insert(-1, Transition(9, 'Save', self._save))
 
@@ -210,6 +213,9 @@ class EditBuild(State):
 
     def _add_consumable(self) -> State:
         return EditBuildAddConsumable(self._build, self._build_backup)
+
+    def _remove_consumable(self) -> State:
+        return EditBuildRemoveConsumable(self._build, self._build_backup)
 
     def _save(self) -> State:
         if self._build not in State._builds:
@@ -499,6 +505,48 @@ class EditBuildAddConsumable(State):
 
     def _confirm(self) -> State:
         self._build.add_consumable(self._consumable)
+        return EditBuild(self._build, self._build_backup)
+
+    def _discard(self) -> State:
+        return EditBuild(self._build, self._build_backup)
+
+
+class EditBuildRemoveConsumable(State):
+    def __init__(self, build: Build, build_backup: Build):
+        super().__init__()
+        self._header = 'BUILD CREATOR - REMOVE CONSUMABLE'
+        self._build = build
+        self._build_backup = build_backup
+        self._consumable = None
+        self._consumables = []
+        self._transitions = [Transition(1, 'Confirm', self._confirm),
+                             Transition(0, 'Discard', self._discard)]
+
+    def _execute(self):
+        print(f'{self._header}\n')
+        self._show_grouped_consumables()
+        self._select_consumable()
+        self._show_transitions()
+
+    def _show_grouped_consumables(self):
+        consumable_slots = sorted([slot_name for slot_name in self._build.consumables.keys()])
+        consumable_id = 0
+
+        for consumable_slot in consumable_slots:
+            print(f'Slot {consumable_slot[-1]} consumable:')
+            consumable = self._build.consumables[consumable_slot]
+            self._consumables.append(consumable)
+            consumable_id += 1
+            print(f'  [{consumable_id}] {consumable}')
+
+    def _select_consumable(self):
+        consumable_id = int(input('\nChoose consumable: '))
+        consumable = self._consumables[consumable_id - 1]
+        self._consumable = consumable
+        print()
+
+    def _confirm(self) -> State:
+        self._build.remove_consumable(self._consumable)
         return EditBuild(self._build, self._build_backup)
 
     def _discard(self) -> State:
