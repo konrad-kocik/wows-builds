@@ -173,6 +173,9 @@ class EditBuild(State):
         if self._build.ship:
             self._transitions.insert(-1, Transition(5, 'Add upgrade', self._add_upgrade))
 
+        if self._build.upgrades:
+            self._transitions.insert(-1, Transition(6, 'Remove upgrade', self._remove_upgrade))
+
         if self._build.ship:
             self._transitions.insert(-1, Transition(7, 'Add consumable', self._add_consumable))
 
@@ -201,6 +204,9 @@ class EditBuild(State):
 
     def _add_upgrade(self) -> State:
         return EditBuildAddUpgrade(self._build, self._build_backup)
+
+    def _remove_upgrade(self) -> State:
+        return EditBuildRemoveUpgrade(self._build, self._build_backup)
 
     def _add_consumable(self) -> State:
         return EditBuildAddConsumable(self._build, self._build_backup)
@@ -370,6 +376,7 @@ class EditBuildRemoveSkill(State):
     def _discard(self) -> State:
         return EditBuild(self._build, self._build_backup)
 
+
 class EditBuildAddUpgrade(State):
     def __init__(self, build: Build, build_backup: Build):
         super().__init__()
@@ -407,6 +414,48 @@ class EditBuildAddUpgrade(State):
 
     def _confirm(self) -> State:
         self._build.add_upgrade(self._upgrade)
+        return EditBuild(self._build, self._build_backup)
+
+    def _discard(self) -> State:
+        return EditBuild(self._build, self._build_backup)
+
+
+class EditBuildRemoveUpgrade(State):
+    def __init__(self, build: Build, build_backup: Build):
+        super().__init__()
+        self._header = 'BUILD CREATOR - REMOVE UPGRADE'
+        self._build = build
+        self._build_backup = build_backup
+        self._upgrade = None
+        self._upgrades = []
+        self._transitions = [Transition(1, 'Confirm', self._confirm),
+                             Transition(0, 'Discard', self._discard)]
+
+    def _execute(self):
+        print(f'{self._header}\n')
+        self._show_grouped_upgrades()
+        self._select_upgrade()
+        self._show_transitions()
+
+    def _show_grouped_upgrades(self):
+        upgrade_slots = sorted([slot_name for slot_name in self._build.upgrades.keys()])
+        upgrade_id = 0
+
+        for upgrade_slot in upgrade_slots:
+            print(f'Slot {upgrade_slot[-1]} upgrade:')
+            upgrade = self._build.upgrades[upgrade_slot]
+            self._upgrades.append(upgrade)
+            upgrade_id += 1
+            print(f'  [{upgrade_id}] {upgrade}')
+
+    def _select_upgrade(self):
+        upgrade_id = int(input('\nChoose upgrade: '))
+        upgrade = self._upgrades[upgrade_id - 1]
+        self._upgrade = upgrade
+        print()
+
+    def _confirm(self) -> State:
+        self._build.remove_upgrade(self._upgrade)
         return EditBuild(self._build, self._build_backup)
 
     def _discard(self) -> State:
