@@ -1,7 +1,6 @@
 from typing import List
 from collections import namedtuple
 
-from model.ships.ship import Ship
 from model.ships import ships
 from model.build import Build
 from data.storage import can_builds_be_loaded, load_builds, save_builds
@@ -97,6 +96,7 @@ class ListBuilds(State):
     def __init__(self):
         super().__init__()
         self._header = 'BUILDS'
+        self._grouped_builds = []
         self._transitions = []
 
     def _execute(self):
@@ -113,13 +113,14 @@ class ListBuilds(State):
             print(f'\n{ship_class}s:')
             for build_id, build in enumerate(self._builds, start=1):
                 if build.ship.ship_class == ship_class:
+                    self._grouped_builds.append(build)
                     self._transitions.append(Transition(build_id, build.name, self._show_build))
                     print(f'  [{build_id}] {build.name}')
 
     def _go_to(self, transition_id: int) -> State:
         for transition in self._transitions:
             if transition.id == transition_id:
-                return transition.next_state(build=State._builds[transition_id - 1]) if transition_id != 0 else transition.next_state()
+                return transition.next_state(build=self._grouped_builds[transition_id - 1]) if transition_id != 0 else transition.next_state()
         return self
 
     def _start(self) -> State:
@@ -261,19 +262,19 @@ class EditBuildShip(State):
         self._build = build
         self._build_backup = build_backup
         self._ship = None
+        self._ships = []
         self._transitions = [Transition(1, 'Confirm', self._confirm),
                              Transition(0, 'Discard', self._discard)]
 
     def _execute(self):
         print(f'{self._header}\n')
-        grouped_ships = self._show_grouped_ships()
-        self._select_ship(grouped_ships)
+        self._show_grouped_ships()
+        self._select_ship()
         self._show_transitions()
 
-    def _show_grouped_ships(self) -> List[Ship]:
+    def _show_grouped_ships(self):
         ship_classes = sorted(set([ship.ship_class for ship in ships]))
         ship_nations = sorted(set([ship.nation for ship in ships]))
-        grouped_ships = []
 
         for ship_class in ship_classes:
             print(f'{ship_class}s:')
@@ -281,14 +282,12 @@ class EditBuildShip(State):
                 print(f'  {ship_nation}:') if any([ship for ship in ships if ship.ship_class == ship_class and ship.nation == ship_nation]) else None
                 for ship in ships:
                     if ship.ship_class == ship_class and ship.nation == ship_nation:
-                        grouped_ships.append(ship)
-                        print(f'    [{grouped_ships.index(ship) + 1}] {ship.name}')
+                        self._ships.append(ship)
+                        print(f'    [{self._ships.index(ship) + 1}] {ship.name}')
 
-        return grouped_ships
-
-    def _select_ship(self, grouped_ships: List[Ship]):
+    def _select_ship(self):
         ship_id = int(input('\nChoose ship: '))
-        self._ship = grouped_ships[ship_id - 1]
+        self._ship = self._ships[ship_id - 1]
 
         if self._build.ship:
             print('\nWARNING: changing ship will reset build skills, upgrades and consumables')
