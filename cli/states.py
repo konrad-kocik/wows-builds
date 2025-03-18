@@ -148,7 +148,7 @@ class ShowBuild(State):
         return EditBuild(self._build)
 
     def _delete_build(self) -> State:
-        return State()
+        return DeleteBuild(self._build)
 
     def _back(self) -> State:
         return ListBuilds()
@@ -551,3 +551,26 @@ class EditBuildRemoveConsumable(State):
 
     def _discard(self) -> State:
         return EditBuild(self._build, self._build_backup)
+
+
+class DeleteBuild(State):
+    def __init__(self, build: Build):
+        super().__init__()
+        self._header = 'DELETE BUILD'
+        self._build = build
+        self._transitions = [Transition(1, 'Confirm', self._confirm),
+                             Transition(0, 'Discard', self._discard)]
+
+    def _execute(self):
+        print(f'{self._header}')
+        print()
+        print(f'Are you sure that you want to delete build {self._build.name}?')
+        print()
+        self._show_transitions()
+
+    def _confirm(self) -> State:
+        State._builds.remove(self._build)
+        return Start()
+
+    def _discard(self) -> State:
+        return Start()
