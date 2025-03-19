@@ -1,5 +1,6 @@
 from model.ships.amagi import Amagi
 from model.ships.gneisenau import Gneisenau
+from model.ships.hawkins import Hawkins
 from model.ships.helena import Helena
 from model.ships.hipper import Hipper
 from model.ships.iron_duke import IronDuke
@@ -11,6 +12,7 @@ from model.ships.vauquelin import Vauquelin
 
 ships = [Amagi(),
          Gneisenau(),
+         Hawkins(),
          Helena(),
          Hipper(),
          IronDuke(),
