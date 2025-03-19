@@ -1,4 +1,5 @@
 from model.ships.amagi import Amagi
+from model.ships.blyskawica import Blyskawica
 from model.ships.devonshire import Devonshire
 from model.ships.gneisenau import Gneisenau
 from model.ships.hawkins import Hawkins
@@ -12,6 +13,7 @@ from model.ships.queen_elizabeth import QueenElizabeth
 from model.ships.vauquelin import Vauquelin
 
 ships = [Amagi(),
+         Blyskawica(),
          Devonshire(),
          Gneisenau(),
          Hawkins(),
