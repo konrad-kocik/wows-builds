@@ -14,6 +14,7 @@ from model.ships.nagato import Nagato
 from model.ships.north_carolina import NorthCarolina
 from model.ships.queen_elizabeth import QueenElizabeth
 from model.ships.vauquelin import Vauquelin
+from model.ships.yamato import Yamato
 
 ships = {'Amagi': Amagi,
          'Błyskawica': Blyskawica,
@@ -28,7 +29,8 @@ ships = {'Amagi': Amagi,
          'Nagato': Nagato,
          'North Carolina': NorthCarolina,
          'Queen Elizabeth': QueenElizabeth,
-         'Vauquelin': Vauquelin}
+         'Vauquelin': Vauquelin,
+         'Yamato': Yamato}
 
 
 def create_ship(name: str) -> Ship:

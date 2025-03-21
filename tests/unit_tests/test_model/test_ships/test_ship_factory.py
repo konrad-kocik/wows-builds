@@ -16,6 +16,7 @@ from model.ships.nagato import Nagato
 from model.ships.north_carolina import NorthCarolina
 from model.ships.queen_elizabeth import QueenElizabeth
 from model.ships.vauquelin import Vauquelin
+from model.ships.yamato import Yamato
 
 
 @mark.parametrize('ship_name, ship_type',
@@ -32,7 +33,8 @@ from model.ships.vauquelin import Vauquelin
                    ('Nagato', Nagato),
                    ('North Carolina', NorthCarolina),
                    ('Queen Elizabeth', QueenElizabeth),
-                   ('Vauquelin', Vauquelin)])
+                   ('Vauquelin', Vauquelin),
+                   ('Yamato', Yamato)])
 def test_create_ship_returns_correct_ship(ship_name, ship_type):
     ship = create_ship(name=ship_name)
 
